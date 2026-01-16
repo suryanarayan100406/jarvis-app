@@ -39,15 +39,17 @@ create policy "View channel members"
 create policy "View channels"
     on public.channels for select
     using (
-        id = 'global' -- Everyone sees global (UUID cast issue? 'global' is TEXT in our logic, but ID is UUID. Wait. Global is special.)
-        OR
+        -- For now, we don't put 'global' in this table. 
+        -- If we did, we'd need to either cast id::text or change column type.
+        -- We just check membership.
         exists (
             select 1 from public.channel_members cm
             where cm.channel_id = channels.id
             and cm.user_id = auth.uid()
         )
         OR 
-        is_dm = true -- DMs handled separately? No, let's migrate DMs to members eventually. For now keep existing DM logic parallel.
+        -- Allow public/broadcast channels if we add them later
+        type = 'global' 
     );
 
 -- 4. RPC: Create Group (Atomic)
