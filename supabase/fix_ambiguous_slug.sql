@@ -1,6 +1,9 @@
 -- FIX AMBIGUOUS COLUMN REFERENCE
 -- Issue: 'slug' param clashed with 'slug' (or similar) column in channels table.
 -- Fix: Rename param to 'p_invite_slug'
+-- Error Fix: Must DROP first because param name changed
+
+drop function if exists public.join_via_invite(text);
 
 create or replace function public.join_via_invite(
     p_invite_slug text
