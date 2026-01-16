@@ -8,8 +8,11 @@ import { Send, Sparkles, Paperclip, Mic, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useChatMessages } from '@/hooks/useChatMessages'
 
+import { useRouter } from 'next/navigation'
+
 export default function ChatInterface() {
     const { messages, isLoading, deleteMessage } = useChatMessages()
+    const router = useRouter()
     const [inputValue, setInputValue] = useState('')
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [summary, setSummary] = useState<string | null>(null)
@@ -37,9 +40,16 @@ export default function ChatInterface() {
     useEffect(() => {
         // Get current user
         supabase.auth.getUser().then(({ data }) => {
-            setCurrentUser(data.user)
+            if (!data.user) {
+                router.push('/login')
+            } else {
+                setCurrentUser(data.user)
+            }
         })
     }, [])
+
+    // Prevent rendering if not logged in (optional, but good for flicker)
+    if (!currentUser) return <div className="h-full flex items-center justify-center text-muted-foreground"><Loader2 className="animate-spin" /></div>
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -52,8 +62,8 @@ export default function ChatInterface() {
         const { error } = await supabase.from('messages').insert({
             content,
             user_id: currentUser?.id,
-            is_anonymous: !currentUser, // If no user, assume anon (or check specific anon flag)
-            anonymous_alias: !currentUser ? 'Guest' : null
+            is_anonymous: false,
+            anonymous_alias: null
         })
 
         if (error) {
@@ -145,7 +155,7 @@ export default function ChatInterface() {
                         <Input
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            placeholder={currentUser ? "Type a message..." : "Type anonymously..."}
+                            placeholder="Type a message..."
                             className="pr-10 bg-secondary/50 border-transparent focus:border-primary/50"
                         />
                     </div>
