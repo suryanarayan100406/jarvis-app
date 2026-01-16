@@ -21,8 +21,11 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ summary: text })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Error:", error)
-        return NextResponse.json({ summary: "Failed to generate summary." }, { status: 500 })
+        return NextResponse.json({
+            summary: "Failed to generate summary.",
+            details: error.message || String(error)
+        }, { status: 500 })
     }
 }
