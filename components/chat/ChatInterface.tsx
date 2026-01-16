@@ -9,12 +9,14 @@ import { supabase } from '@/lib/supabase'
 import { useChatMessages } from '@/hooks/useChatMessages'
 import { Avatar } from '@/components/ui/Avatar'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { GroupInfoModal } from '@/components/chat/GroupInfoModal'
 
 export default function ChatInterface() {
     const searchParams = useSearchParams()
     const channelId = searchParams.get('chatId') || 'global'
     const chatName = searchParams.get('name') || 'Global Chat'
     const chatAvatar = searchParams.get('avatar')
+    const chatType = searchParams.get('type') // 'group' or undefined/null
 
     const { messages, isLoading, deleteMessage, toggleReaction, addMessage } = useChatMessages(channelId)
     const router = useRouter()
@@ -22,6 +24,7 @@ export default function ChatInterface() {
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [summary, setSummary] = useState<string | null>(null)
     const [isSummarizing, setIsSummarizing] = useState(false)
+    const [showGroupInfo, setShowGroupInfo] = useState(false)
 
     // Auto-scroll to bottom
     const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -138,7 +141,14 @@ export default function ChatInterface() {
 
             {/* Chat Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-secondary/20">
-                <div className="flex items-center gap-3">
+                <div
+                    className={`flex items-center gap-3 ${chatType === 'group' ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    onClick={() => {
+                        if (chatType === 'group') {
+                            setShowGroupInfo(true)
+                        }
+                    }}
+                >
                     {chatAvatar ? (
                         <Avatar src={chatAvatar} fallback={chatName} className="w-10 h-10 border border-white/10" />
                     ) : (
@@ -228,6 +238,15 @@ export default function ChatInterface() {
                     )}
                 </form>
             </div>
+
+            {/* Modals */}
+            {showGroupInfo && (
+                <GroupInfoModal
+                    channelId={channelId}
+                    onClose={() => setShowGroupInfo(false)}
+                    currentUser={currentUser}
+                />
+            )}
         </div>
     )
 }
