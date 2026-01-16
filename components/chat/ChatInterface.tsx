@@ -1,32 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { MessageBubble } from '@/components/chat/MessageBubble'
-import { Send, Sparkles, Paperclip, Mic } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Send, Sparkles, Paperclip, Mic, Loader2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { useChatMessages } from '@/hooks/useChatMessages'
 
 export default function ChatInterface() {
-    const [messages, setMessages] = useState([
-        { id: 1, content: "Yo, did you check the new update?", isOwn: false, timestamp: "10:42 AM", sender: "Alex" },
-        { id: 2, content: "Yeah, the animations are sick! 🔥", isOwn: true, timestamp: "10:43 AM", sender: "Me" },
-        { id: 3, content: "We should build something like this.", isOwn: false, timestamp: "10:44 AM", sender: "Alex" },
-    ])
+    const { messages, isLoading } = useChatMessages()
     const [inputValue, setInputValue] = useState('')
+    const [currentUser, setCurrentUser] = useState<any>(null)
 
-    const handleSendMessage = (e: React.FormEvent) => {
+    useEffect(() => {
+        // Get current user
+        supabase.auth.getUser().then(({ data }) => {
+            setCurrentUser(data.user)
+        })
+    }, [])
+
+    const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!inputValue.trim()) return
 
-        setMessages([...messages, {
-            id: Date.now(),
-            content: inputValue,
-            isOwn: true,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            sender: "Me"
-        }])
-        setInputValue('')
+        const content = inputValue
+        setInputValue('') // Optimistic clear
+
+        // Insert into DB
+        const { error } = await supabase.from('messages').insert({
+            content,
+            user_id: currentUser?.id,
+            is_anonymous: !currentUser, // If no user, assume anon (or check specific anon flag)
+            anonymous_alias: !currentUser ? 'Guest' : null
+        })
+
+        if (error) {
+            console.error("Failed to send", error)
+            alert("Error sending message. Make sure RLS is set up!")
+        }
     }
 
     return (
@@ -36,8 +48,8 @@ export default function ChatInterface() {
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
                     <div>
-                        <h3 className="font-bold">The Squad</h3>
-                        <p className="text-xs text-green-400">Online • 3 members</p>
+                        <h3 className="font-bold">Global Chat</h3>
+                        <p className="text-xs text-green-400">Live</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -49,17 +61,32 @@ export default function ChatInterface() {
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-                <div className="space-y-4">
-                    {messages.map((msg) => (
-                        <MessageBubble
-                            key={msg.id}
-                            isOwn={msg.isOwn}
-                            content={msg.content}
-                            timestamp={msg.timestamp}
-                            senderName={msg.sender}
-                        />
-                    ))}
-                </div>
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-full text-muted-foreground">
+                        <Loader2 className="animate-spin w-8 h-8" />
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {messages.map((msg) => {
+                            // Check ownership accurately
+                            const isOwn = currentUser && msg.user_id === currentUser.id
+                            return (
+                                <MessageBubble
+                                    key={msg.id}
+                                    isOwn={isOwn || false}
+                                    content={msg.content}
+                                    timestamp={new Date(msg.inserted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    senderName={msg.sender_name}
+                                />
+                            )
+                        })}
+                        {messages.length === 0 && (
+                            <div className="text-center text-muted-foreground mt-10">
+                                No messages yet. Be the first!
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Input Area */}
@@ -73,10 +100,9 @@ export default function ChatInterface() {
                         <Input
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            placeholder="Type a message..."
+                            placeholder={currentUser ? "Type a message..." : "Type anonymously..."}
                             className="pr-10 bg-secondary/50 border-transparent focus:border-primary/50"
                         />
-                        <SmileIcon className="absolute right-3 top-2.5 w-5 h-5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                     </div>
 
                     {inputValue ? (
@@ -91,27 +117,5 @@ export default function ChatInterface() {
                 </form>
             </div>
         </div>
-    )
-}
-
-function SmileIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-            <line x1="9" x2="9.01" y1="9" y2="9" />
-            <line x1="15" x2="15.01" y1="9" y2="9" />
-        </svg>
     )
 }
