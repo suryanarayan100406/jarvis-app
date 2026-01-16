@@ -274,11 +274,34 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                                             </div>
 
                                             {/* Admin Actions */}
-                                            {isAdmin && m.user_id !== currentUser.id && m.role !== 'owner' && (
-                                                <Button size="icon" variant="ghost" className="h-6 w-6 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleKickMember(m.user_id)} title="Kick User">
-                                                    <LogOut className="w-3 h-3" />
-                                                </Button>
-                                            )}
+                                            <div className="flex gap-1">
+                                                {/* Only Owner can promote/demote/transfer */}
+                                                {members.find(m => m.user_id === currentUser.id)?.role === 'owner' && m.user_id !== currentUser.id && (
+                                                    <>
+                                                        {m.role === 'member' && (
+                                                            <Button size="icon" variant="ghost" className="h-6 w-6 text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handlePromote(m.user_id)} title="Promote to Admin">
+                                                                <Shield className="w-3 h-3" />
+                                                            </Button>
+                                                        )}
+                                                        {m.role === 'admin' && (
+                                                            <>
+                                                                <Button size="icon" variant="ghost" className="h-6 w-6 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDemote(m.user_id)} title="Demote to Member">
+                                                                    <Shield className="w-3 h-3 line-through" />
+                                                                </Button>
+                                                                <Button size="icon" variant="ghost" className="h-6 w-6 text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleTransferOwnership(m.user_id)} title="Transfer Ownership">
+                                                                    <Crown className="w-3 h-3" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+
+                                                {isAdmin && m.user_id !== currentUser.id && m.role !== 'owner' && (
+                                                    <Button size="icon" variant="ghost" className="h-6 w-6 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleKickMember(m.user_id)} title="Kick User">
+                                                        <LogOut className="w-3 h-3" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
