@@ -11,7 +11,8 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey)
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+        // Use gemini-1.5-flash as it is the current standard for fast tasks
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
         const prompt = `Summarize this chat conversation in a fun, Gen Z slang style (like 'The Tea'): \n\n${messages.join('\n')}`
 
