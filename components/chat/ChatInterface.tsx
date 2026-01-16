@@ -7,12 +7,14 @@ import { MessageBubble } from '@/components/chat/MessageBubble'
 import { Send, Sparkles, Paperclip, Mic, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useChatMessages } from '@/hooks/useChatMessages'
+import { Avatar } from '@/components/ui/Avatar'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function ChatInterface() {
     const searchParams = useSearchParams()
     const channelId = searchParams.get('chatId') || 'global'
     const chatName = searchParams.get('name') || 'Global Chat'
+    const chatAvatar = searchParams.get('avatar')
 
     const { messages, isLoading, deleteMessage } = useChatMessages(channelId)
     const router = useRouter()
@@ -94,10 +96,18 @@ export default function ChatInterface() {
                 </div>
             )}
 
+            import {Avatar} from '@/components/ui/Avatar' // Ensure imported
+
+            // ... inside component ...
+
             {/* Chat Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-secondary/20">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
+                    {chatAvatar ? (
+                        <Avatar src={chatAvatar} fallback={chatName} className="w-10 h-10 border border-white/10" />
+                    ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
+                    )}
                     <div>
                         <h3 className="font-bold">{chatName}</h3>
                         <p className="text-xs text-green-400">Live</p>
