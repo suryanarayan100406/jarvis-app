@@ -80,7 +80,12 @@ export function Sidebar() {
             if (friendRows && friendRows.length > 0) {
                 const friendIds = friendRows.map(r => r.friend_id)
                 const { data: friendsData } = await supabase.from('profiles').select('*').in('id', friendIds)
-                setFriends(friendsData || [])
+                // Mock Unread Counts for UI Demo
+                const friendsWithUnread = (friendsData || []).map(f => ({
+                    ...f,
+                    unread: Math.floor(Math.random() * 5) // Simulating 0-4 unread messages
+                }))
+                setFriends(friendsWithUnread)
             } else {
                 setFriends([])
             }
@@ -219,7 +224,7 @@ export function Sidebar() {
                                 return (
                                     <div
                                         key={friend.id}
-                                        onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}`)}
+                                        onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}&avatar=${encodeURIComponent(friend.avatar_url)}`)}
                                         className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group"
                                     >
                                         <Avatar src={friend.avatar_url} fallback={friend.username} />
@@ -227,7 +232,12 @@ export function Sidebar() {
                                             <span className="font-semibold text-sm text-zinc-200 block">{friend.username}</span>
                                             <span className="text-xs text-muted-foreground truncate">{friend.bio || "Available"}</span>
                                         </div>
-                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                                        {/* Unread Badge (Replaces Green Dot) */}
+                                        {friend.unread > 0 && (
+                                            <div className="bg-red-500 text-white text-[10px] font-bold h-5 min-w-[1.25rem] px-1 flex items-center justify-center rounded-full shadow-lg border border-zinc-900">
+                                                {friend.unread}
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             })
