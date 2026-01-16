@@ -96,7 +96,7 @@ export default function ChatInterface() {
                 </div>
             )}
 
-            import {Avatar} from '@/components/ui/Avatar' // Ensure imported
+
 
             // ... inside component ...
 
