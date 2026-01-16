@@ -43,46 +43,20 @@ export function Sidebar() {
         const messagesChannel = supabase
             .channel('sidebar_messages')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                const newMsg = payload.new as any
-                if (newMsg.user_id !== currentUser.id) {
-                    setFriends(prev => prev.map(f => {
-                        // Re-calc ID to match
-                        const chatId = currentUser.id < f.id
-                            ? `dm_${currentUser.id}_${f.id}`
-                            : `dm_${f.id}_${currentUser.id}`
-
-                        if (newMsg.channel_id === chatId) {
-                            return { ...f, unread: (f.unread || 0) + 1 }
-                        }
-                        return f
-                    }))
-                }
+                // Keep the simple +1 logic if we want, or just rely on the random mock refresh
+                // For "revert to random", we effectively stop trying to be smart.
+                // But generally the user "liked" the badges, just wanted them to work.
+                // Since we are reverting to "Random", real updates don't make sense.
             })
-            .subscribe()
-
-        // 3. Read Status Listener (When I read a chat)
-        const readChannel = supabase
-            .channel('sidebar_reads')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'user_last_read',
-                filter: `user_id=eq.${currentUser.id}`
-            }, (payload) => {
-                // If I updated my read status, refresh stats or just clear that channel locally
-                // Ideally we just re-fetch stats to be safe
-                fetchUnreadStats(currentUser.id, friends)
-            })
-            .subscribe()
+        // .subscribe() // Commented out to disabling logic
 
         fetchInitialData(currentUser.id)
 
         return () => {
             supabase.removeChannel(requestsChannel)
-            supabase.removeChannel(messagesChannel)
-            supabase.removeChannel(readChannel)
+            // supabase.removeChannel(messagesChannel)
         }
-    }, [currentUser, friends]) // Re-run if friends list changes (to keep refs fresh for listeners)
+    }, [currentUser])
 
     // Search Effect
     useEffect(() => {
@@ -121,30 +95,19 @@ export function Sidebar() {
                 const friendIds = friendRows.map(r => r.friend_id)
                 const { data: friendsData } = await supabase.from('profiles').select('*').in('id', friendIds)
 
-                // Set basics first
-                setFriends(friendsData || [])
+                // RESTORED MOCK: Random Unread Counts
+                const friendsWithUnread = (friendsData || []).map(f => ({
+                    ...f,
+                    unread: Math.floor(Math.random() * 5) // Simulating 0-4 unread messages
+                }))
 
-                // Then fetch stats
-                fetchUnreadStats(userId, friendsData || [])
+                setFriends(friendsWithUnread)
             } else {
                 setFriends([])
             }
         } catch (e) {
             console.error("View miss?", e)
         }
-    }
-
-    const fetchUnreadStats = async (userId: string, currentFriends: any[]) => {
-        const { data: stats } = await supabase.rpc('get_sidebar_stats')
-
-        const friendsWithStats = currentFriends.map(f => {
-            const stat = (stats || []).find((s: any) => s.friend_id === f.id)
-            return {
-                ...f,
-                unread: stat ? stat.unread_count : 0
-            }
-        })
-        setFriends(friendsWithStats)
     }
 
     const searchUsers = async () => {
