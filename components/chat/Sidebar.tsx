@@ -166,200 +166,176 @@ export function Sidebar() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-zinc-950 border-r border-white/5">
-            {/* Header */}
-            <div className="p-3 bg-zinc-900/80 border-b border-white/5 flex items-center justify-between shrink-0 h-16">
-                <div
-                    className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors"
-                    onClick={() => setShowProfileModal(true)}
-                >
-                    <Avatar src={currentUser?.avatar_url} fallback={currentUser?.username} className="w-9 h-9 border border-white/10" />
-                    <span className="font-bold text-sm hidden md:block truncate max-w-[100px] text-zinc-200">
-                        {currentUser?.username || "Me"}
-                    </span>
+        <div className="flex h-full bg-zinc-950 border-r border-white/5">
+            {/* LEFT RAIL (Vertical Tabs) */}
+            <div className="w-16 flex flex-col items-center py-4 gap-4 border-r border-white/5 bg-black/20">
+                {/* Profile Icon */}
+                <div onClick={() => setShowProfileModal(true)} className="cursor-pointer hover:opacity-80 transition-opacity">
+                    <Avatar src={currentUser?.avatar_url} fallback={currentUser?.username?.slice(0, 2)} className="w-10 h-10 border-2 border-purple-500/50" />
                 </div>
+
+                <div className="h-px w-8 bg-white/10" />
+
+                <button
+                    onClick={() => setActiveTab('friends')}
+                    className={cn("p-3 rounded-xl transition-all", activeTab === 'friends' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
+                    title="Chats"
+                >
+                    <Users className="w-6 h-6" />
+                </button>
+                <button
+                    onClick={() => setActiveTab('search')}
+                    className={cn("p-3 rounded-xl transition-all", activeTab === 'search' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
+                    title="Find People"
+                >
+                    <Search className="w-6 h-6" />
+                </button>
                 <div className="relative">
-                    <button onClick={() => setShowMenu(!showMenu)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                        <MoreVertical className="w-5 h-5 text-zinc-400" />
+                    <button
+                        onClick={() => setActiveTab('requests')}
+                        className={cn("p-3 rounded-xl transition-all", activeTab === 'requests' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
+                        title="Requests"
+                    >
+                        <Bell className="w-6 h-6" />
                     </button>
-                    {showMenu && (
-                        <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
-                            <button onClick={() => { setShowGroupModal(true); setShowMenu(false) }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 flex items-center gap-3 text-zinc-300">
-                                <Users className="w-4 h-4" /> Create New Group
-                            </button>
-                            <div className="h-px bg-white/5 my-1" />
-                            <button onClick={() => { setShowProfileModal(true); setShowMenu(false) }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 flex items-center gap-3 text-zinc-300">
-                                <Settings className="w-4 h-4" /> Profile & Settings
-                            </button>
-                            <div className="h-px bg-white/5 my-1" />
-                            <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm hover:bg-red-500/10 text-red-400 flex items-center gap-3">
-                                <LogOut className="w-4 h-4" /> Log Out
-                            </button>
-                        </div>
+                    {incomingRequests.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-zinc-950 animate-pulse" />}
+                </div>
+
+                <div className="flex-1" />
+
+                <button onClick={handleLogout} className="p-3 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all" title="Logout">
+                    <LogOut className="w-6 h-6" />
+                </button>
+            </div>
+
+            {/* RIGHT PANEL (Content) */}
+            <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/50">
+                {/* Header (Contextual) */}
+                <div className="h-16 border-b border-white/5 flex items-center justify-between px-4 shrink-0">
+                    <h2 className="font-bold text-lg text-white">
+                        {activeTab === 'friends' && 'Chats'}
+                        {activeTab === 'search' && 'Find'}
+                        {activeTab === 'requests' && 'Requests'}
+                    </h2>
+                    {activeTab === 'friends' && (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setShowGroupModal(true)}
+                            className="h-8 w-8 p-0 rounded-full hover:bg-white/10"
+                            title="New Group"
+                        >
+                            <Users className="w-4 h-4 text-purple-400" />
+                            <span className="sr-only">New Group</span>
+                        </Button>
                     )}
                 </div>
+
+                <ScrollArea className="flex-1 p-3">
+                    {/* LIST CONTENT */}
+
+                    {/* ... (Existing List Logic adapted below) ... */}
+
+                    {activeTab === 'friends' && (
+                        <div className="space-y-1">
+                            {/* Global Chat Item */}
+                            <div onClick={() => router.push('/chat?chatId=global&name=Global Chat')} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors mb-4 bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                                    <span className="text-xs font-bold text-white">GC</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <span className="font-semibold text-sm text-zinc-100 block">Global Chat</span>
+                                    <span className="text-xs text-purple-400">Public Channel</span>
+                                </div>
+                            </div>
+
+                            {/* GROUPS List */}
+                            <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                                <span>Groups</span>
+                                <span className="bg-zinc-800 text-zinc-400 px-1.5 rounded text-[9px]">{groups.length}</span>
+                            </div>
+                            {groups.length === 0 ? (
+                                <div className="px-3 py-4 text-xs text-zinc-600 italic text-center border border-dashed border-zinc-800 rounded-xl mb-4">
+                                    No groups joined.<br />
+                                    <button onClick={() => setShowGroupModal(true)} className="text-purple-400 hover:underline mt-1">Create one?</button>
+                                </div>
+                            ) : (
+                                <div className="mb-4 space-y-1">
+                                    {groups.map(group => (
+                                        <div
+                                            key={group.id}
+                                            onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.image_url || '')}&type=group`)}
+                                            className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group"
+                                        >
+                                            <Avatar src={group.image_url} fallback={group.name} className="w-10 h-10 border border-white/5 group-hover:border-purple-500/30 transition-colors" />
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-semibold text-sm text-zinc-200 block truncate">{group.name}</span>
+                                                <span className="text-xs text-zinc-500 truncate">{group.description || 'Group Chat'}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Direct Messages</div>
+                            {friends.length === 0 ? (
+                                <div className="text-center p-8 text-zinc-600 text-sm">No friends yet.</div>
+                            ) : (
+                                friends.map(friend => {
+                                    const chatId = currentUser.id < friend.id ? `dm_${currentUser.id}_${friend.id}` : `dm_${friend.id}_${currentUser.id}`
+                                    return (
+                                        <div key={friend.id} onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}&avatar=${encodeURIComponent(friend.avatar_url)}`)} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
+                                            <div className="relative">
+                                                <Avatar src={friend.avatar_url} fallback={friend.username} className="w-10 h-10" />
+                                                {friend.unread > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white border-2 border-zinc-950">{friend.unread}</span>}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-semibold text-sm text-zinc-200 block">{friend.username}</span>
+                                                <span className="text-xs text-muted-foreground truncate">{friend.bio || "Available"}</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'search' && (
+                        <div className="space-y-4">
+                            <div className="px-1"><Input placeholder="Search people..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-black/20 border-white/10" /></div>
+                            <div className="space-y-1">
+                                {searchResults.map(user => (
+                                    <div key={user.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                                        <Avatar src={user.avatar_url} fallback={user.username} className="w-10 h-10" />
+                                        <div className="flex-1 min-w-0"><span className="font-semibold text-sm text-zinc-200 block">{user.username}</span></div>
+                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-purple-400 hover:bg-purple-500/20" onClick={() => sendRequest(user.id)}><UserPlus className="w-4 h-4" /></Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'requests' && (
+                        <div className="space-y-2">
+                            {incomingRequests.length === 0 && <div className="text-center p-8 text-zinc-600 text-sm">No new requests</div>}
+                            {incomingRequests.map(req => (
+                                <div key={req.id} className="bg-white/5 p-4 rounded-xl border border-white/5">
+                                    <div className="flex items-center gap-3 mb-3"><Avatar src={req.sender.avatar_url} fallback={req.sender.username} className="w-10 h-10" /><span className="font-bold text-sm text-white">{req.sender.username}</span></div>
+                                    <div className="flex gap-2">
+                                        <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-9" onClick={() => handleRequest(req.id, 'accepted')}><Check className="w-4 h-4 mr-2" /> Accept</Button>
+                                        <Button size="sm" variant="ghost" className="flex-1 h-9 hover:bg-white/10" onClick={() => handleRequest(req.id, 'rejected')}><X className="w-4 h-4 mr-2" /> Ignore</Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                </ScrollArea>
             </div>
 
             {showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} />}
             {showGroupModal && <CreateGroupModal onClose={() => setShowGroupModal(false)} currentUser={currentUser} onGroupCreated={() => fetchInitialData(currentUser?.id)} />}
-
             <ProfileSetup onComplete={() => fetchSession()} />
-
-            {/* Tabs */}
-            <div className="grid grid-cols-3 p-2 gap-1 border-b border-white/5">
-                <button
-                    onClick={() => setActiveTab('friends')}
-                    className={cn("flex flex-col items-center justify-center p-2 rounded-lg transition-colors text-xs font-medium", activeTab === 'friends' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300')}
-                >
-                    <Users className="w-5 h-5 mb-1" /> Chats
-                </button>
-                <button
-                    onClick={() => setActiveTab('search')}
-                    className={cn("flex flex-col items-center justify-center p-2 rounded-lg transition-colors text-xs font-medium", activeTab === 'search' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300')}
-                >
-                    <Search className="w-5 h-5 mb-1" /> Find
-                </button>
-                <button
-                    onClick={() => setActiveTab('requests')}
-                    className={cn("flex flex-col items-center justify-center p-2 rounded-lg transition-colors text-xs font-medium relative", activeTab === 'requests' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300')}
-                >
-                    <Bell className="w-5 h-5 mb-1" /> Requests
-                    {incomingRequests.length > 0 && (
-                        <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    )}
-                </button>
-            </div>
-
-            <ScrollArea className="flex-1 p-2">
-                {/* TAB: FRIENDS (CHATS) */}
-                {activeTab === 'friends' && (
-                    <div className="space-y-1">
-                        {/* Global Chat Item */}
-                        <div
-                            onClick={() => router.push('/chat?chatId=global&name=Global Chat')}
-                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors mb-2 bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20"
-                        >
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center">
-                                <span className="text-xs font-bold text-white">GC</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <span className="font-semibold text-sm text-zinc-200 block">Global Chat</span>
-                            </div>
-                        </div>
-
-                        {/* GROUPS List */}
-                        <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-4">Groups</div>
-                        {groups.length === 0 ? (
-                            <div className="px-3 py-2 text-xs text-zinc-600 italic">No groups joined.</div>
-                        ) : (
-                            groups.map(group => (
-                                <div
-                                    key={group.id}
-                                    onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&type=group`)}
-                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
-                                >
-                                    <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
-                                        <Users className="w-4 h-4 text-zinc-400" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <span className="font-semibold text-sm text-zinc-200 block">{group.name}</span>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-
-                        <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-4">Direct Messages</div>
-                        {friends.length === 0 ? (
-                            <div className="text-center p-4 text-zinc-500 text-sm">No friends yet.</div>
-                        ) : (
-                            friends.map(friend => {
-                                // Deterministic Channel ID: dm_minId_maxId
-                                const chatId = currentUser.id < friend.id
-                                    ? `dm_${currentUser.id}_${friend.id}`
-                                    : `dm_${friend.id}_${currentUser.id}`
-
-                                return (
-                                    <div
-                                        key={friend.id}
-                                        onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}&avatar=${encodeURIComponent(friend.avatar_url)}`)}
-                                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group"
-                                    >
-                                        <Avatar src={friend.avatar_url} fallback={friend.username} />
-                                        <div className="flex-1 min-w-0">
-                                            <span className="font-semibold text-sm text-zinc-200 block">{friend.username}</span>
-                                            <span className="text-xs text-muted-foreground truncate">{friend.bio || "Available"}</span>
-                                        </div>
-                                        {/* Unread Badge (Replaces Green Dot) */}
-                                        {friend.unread > 0 && (
-                                            <div className="bg-red-500 text-white text-[10px] font-bold h-5 min-w-[1.25rem] px-1 flex items-center justify-center rounded-full shadow-lg border border-zinc-900">
-                                                {friend.unread}
-                                            </div>
-                                        )}
-                                    </div>
-                                )
-                            })
-                        )}
-                    </div>
-                )}
-
-                {/* TAB: SEARCH */}
-                {activeTab === 'search' && (
-                    <div className="space-y-4">
-                        <div className="px-1">
-                            <Input
-                                placeholder="Search username... (min 3 chars)"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-black/20 border-white/10"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            {searchResults.map(user => (
-                                <div key={user.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
-                                    <Avatar src={user.avatar_url} fallback={user.username} className="w-8 h-8" />
-                                    <div className="flex-1 min-w-0">
-                                        <span className="font-semibold text-sm text-zinc-200 block">{user.username}</span>
-                                    </div>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-purple-400 hover:bg-purple-500/20" onClick={() => sendRequest(user.id)}>
-                                        <UserPlus className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            ))}
-                            {searchQuery.length > 2 && searchResults.length === 0 && (
-                                <div className="text-center text-zinc-500 text-xs">No users found.</div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* TAB: REQUESTS */}
-                {activeTab === 'requests' && (
-                    <div className="space-y-1">
-                        {incomingRequests.length === 0 ? (
-                            <div className="text-center p-4 text-zinc-500 text-sm">
-                                No pending requests.
-                            </div>
-                        ) : (
-                            incomingRequests.map(req => (
-                                <div key={req.id} className="bg-white/5 p-3 rounded-xl mb-2">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Avatar src={req.sender.avatar_url} fallback={req.sender.username} className="w-8 h-8" />
-                                        <span className="font-bold text-sm">{req.sender.username}</span>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-8" onClick={() => handleRequest(req.id, 'accepted')}>
-                                            <Check className="w-4 h-4 mr-1" /> Accept
-                                        </Button>
-                                        <Button size="sm" variant="ghost" className="flex-1 h-8 hover:bg-white/10" onClick={() => handleRequest(req.id, 'rejected')}>
-                                            <X className="w-4 h-4 mr-1" /> Decline
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                )}
-            </ScrollArea>
         </div>
     )
 }
