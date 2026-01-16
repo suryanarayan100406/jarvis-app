@@ -11,16 +11,37 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey)
-        // Use gemini-1.5-flash as it is the current standard for fast tasks
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
-        const prompt = `Summarize this chat conversation in a fun, Gen Z slang style (like 'The Tea'): \n\n${messages.join('\n')}`
+        // List of models to try in order of preference
+        const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.0-pro", "gemini-pro"]
 
-        const result = await model.generateContent(prompt)
-        const response = await result.response
-        const text = response.text()
+        let lastError = null;
+        let summaryText = null;
 
-        return NextResponse.json({ summary: text })
+        for (const modelName of models) {
+            try {
+                console.log(`Attempting summary with model: ${modelName}`)
+                const model = genAI.getGenerativeModel({ model: modelName })
+                const prompt = `Summarize this chat conversation in a fun, Gen Z slang style (like 'The Tea'): \n\n${messages.join('\n')}`
+
+                const result = await model.generateContent(prompt)
+                const response = await result.response
+                summaryText = response.text()
+
+                // If we get here, it worked!
+                break;
+            } catch (e: any) {
+                console.warn(`Model ${modelName} failed:`, e.message)
+                lastError = e
+                // Continue to next model
+            }
+        }
+
+        if (!summaryText) {
+            throw lastError || new Error("All models failed")
+        }
+
+        return NextResponse.json({ summary: summaryText })
 
     } catch (error: any) {
         console.error("AI Error:", error)
