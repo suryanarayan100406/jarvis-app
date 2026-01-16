@@ -7,11 +7,14 @@ import { MessageBubble } from '@/components/chat/MessageBubble'
 import { Send, Sparkles, Paperclip, Mic, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useChatMessages } from '@/hooks/useChatMessages'
-
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function ChatInterface() {
-    const { messages, isLoading, deleteMessage } = useChatMessages()
+    const searchParams = useSearchParams()
+    const channelId = searchParams.get('chatId') || 'global'
+    const chatName = searchParams.get('name') || 'Global Chat'
+
+    const { messages, isLoading, deleteMessage } = useChatMessages(channelId)
     const router = useRouter()
     const [inputValue, setInputValue] = useState('')
     const [currentUser, setCurrentUser] = useState<any>(null)
@@ -32,6 +35,7 @@ export default function ChatInterface() {
             setSummary(data.summary)
         } catch (e) {
             console.error(e)
+            setSummary("Failed to summarize. Check API Key.")
         } finally {
             setIsSummarizing(false)
         }
@@ -62,6 +66,7 @@ export default function ChatInterface() {
         const { error } = await supabase.from('messages').insert({
             content,
             user_id: currentUser?.id,
+            channel_id: channelId,
             is_anonymous: false,
             anonymous_alias: null
         })
@@ -94,7 +99,7 @@ export default function ChatInterface() {
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
                     <div>
-                        <h3 className="font-bold">Global Chat</h3>
+                        <h3 className="font-bold">{chatName}</h3>
                         <p className="text-xs text-green-400">Live</p>
                     </div>
                 </div>

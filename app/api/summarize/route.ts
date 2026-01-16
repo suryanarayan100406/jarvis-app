@@ -1,34 +1,28 @@
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { NextResponse } from 'next/server'
 
-// In a real app, we would use an LLM provider:
-// import { HfInference } from '@huggingface/inference'
-// const hf = new HfInference(process.env.HF_API_KEY)
-
-/* 
-  POST /api/summarize
-  Body: { messages: string[] }
-*/
 export async function POST(req: Request) {
     try {
         const { messages } = await req.json()
+        const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
 
-        if (!messages || messages.length === 0) {
-            return NextResponse.json({ summary: "No messages to summarize." })
+        if (!apiKey) {
+            return NextResponse.json({ summary: "API Key Missing. Add GEMINI_API_KEY to .env" }, { status: 500 })
         }
 
-        // Mock AI Logic (Placeholder until user provides keys or we set up free HF/Gemini)
-        // Real logic: Const prompt = "Summarize these chats: " + messages.join("\n") -> LLM
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" })
 
-        // Simulating "Gen Z" style summary
-        const mockSummary = "Basically, everyone is vibe checking the new update. The squad is hype about the animations being 3D, and someone (Alex) wants to build a clone. It's giving main character energy."
+        const prompt = `Summarize this chat conversation in a fun, Gen Z slang style (like 'The Tea'): \n\n${messages.join('\n')}`
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        const result = await model.generateContent(prompt)
+        const response = await result.response
+        const text = response.text()
 
-        return NextResponse.json({ summary: mockSummary })
+        return NextResponse.json({ summary: text })
 
     } catch (error) {
-        console.error(error)
-        return NextResponse.json({ error: 'Failed to generate summary' }, { status: 500 })
+        console.error("AI Error:", error)
+        return NextResponse.json({ summary: "Failed to generate summary." }, { status: 500 })
     }
 }

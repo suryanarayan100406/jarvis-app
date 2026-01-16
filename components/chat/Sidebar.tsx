@@ -9,8 +9,10 @@ import { MoreVertical, LogOut, Settings, Search, UserPlus, Users, Bell, Check, X
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 export function Sidebar() {
+    const router = useRouter()
     const [activeTab, setActiveTab] = useState<'friends' | 'search' | 'requests'>('friends')
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [showProfileModal, setShowProfileModal] = useState(false)
@@ -194,16 +196,27 @@ export function Sidebar() {
                                 No friends yet.<br />Go to "Find" to add people!
                             </div>
                         ) : (
-                            friends.map(friend => (
-                                <div key={friend.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
-                                    <Avatar src={friend.avatar_url} fallback={friend.username} />
-                                    <div className="flex-1 min-w-0">
-                                        <span className="font-semibold text-sm text-zinc-200 block">{friend.username}</span>
-                                        <span className="text-xs text-muted-foreground truncate">{friend.bio || "Available"}</span>
+                            friends.map(friend => {
+                                // Deterministic Channel ID: dm_minId_maxId
+                                const chatId = currentUser.id < friend.id
+                                    ? `dm_${currentUser.id}_${friend.id}`
+                                    : `dm_${friend.id}_${currentUser.id}`
+
+                                return (
+                                    <div
+                                        key={friend.id}
+                                        onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}`)}
+                                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group"
+                                    >
+                                        <Avatar src={friend.avatar_url} fallback={friend.username} />
+                                        <div className="flex-1 min-w-0">
+                                            <span className="font-semibold text-sm text-zinc-200 block">{friend.username}</span>
+                                            <span className="text-xs text-muted-foreground truncate">{friend.bio || "Available"}</span>
+                                        </div>
+                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
                                     </div>
-                                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
-                                </div>
-                            ))
+                                )
+                            })
                         )}
                     </div>
                 )}

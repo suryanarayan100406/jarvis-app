@@ -134,26 +134,33 @@ export function ProfileSetup({ onComplete, isEditing = false }: { onComplete: ()
                         </div>
                     </div>
 
+                    <div>
+                        <label className="text-xs text-zinc-500 mb-1 block uppercase font-bold tracking-wider">Username</label>
+                        <Input
+                            value={username}
+                            onChange={e => setUsername(e.target.value)}
+                            placeholder="e.g. CyberPunk2077"
+                            className="bg-black/20 border-zinc-700 focus:border-primary"
                         />
-                </div>
+                    </div>
 
-                <div>
-                    <label className="text-xs text-zinc-500 mb-1 block uppercase font-bold tracking-wider">Bio / Status</label>
-                    <Input
-                        value={bio}
-                        onChange={e => setBio(e.target.value)}
-                        placeholder="Hey there! I am using Jarvis."
-                        className="bg-black/20 border-zinc-700 focus:border-primary"
-                        maxLength={50}
-                    />
-                    <div className="text-right text-[10px] text-zinc-600 mt-1">{bio.length}/50</div>
-                </div>
+                    <div>
+                        <label className="text-xs text-zinc-500 mb-1 block uppercase font-bold tracking-wider">Bio / Status</label>
+                        <Input
+                            value={bio}
+                            onChange={e => setBio(e.target.value)}
+                            placeholder="Hey there! I am using Jarvis."
+                            className="bg-black/20 border-zinc-700 focus:border-primary"
+                            maxLength={50}
+                        />
+                        <div className="text-right text-[10px] text-zinc-600 mt-1">{bio.length}/50</div>
+                    </div>
 
-                <Button onClick={handleSave} disabled={loading || !username} className="w-full py-6 text-lg">
-                    {loading ? 'Saving...' : 'Save Profile'}
-                </Button>
+                    <Button onClick={handleSave} disabled={loading || !username} className="w-full py-6 text-lg">
+                        {loading ? 'Saving...' : 'Save Profile'}
+                    </Button>
+                </div>
             </div>
         </div>
-        </div >
     )
 }

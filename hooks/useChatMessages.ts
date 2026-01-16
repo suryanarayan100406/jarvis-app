@@ -25,6 +25,7 @@ export function useChatMessages(channelId: string = 'global') {
           *,
           profiles:user_id ( username, avatar_url )
         `)
+                .eq('channel_id', channelId) // Filter by channel!
                 .order('inserted_at', { ascending: true })
                 .limit(50)
 
@@ -46,15 +47,16 @@ export function useChatMessages(channelId: string = 'global') {
         // 2. Subscribe to new messages
         const channel = supabase
             .channel(`chat:${channelId}`)
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `channel_id=eq.${channelId}` // Filter realtime events too
+            }, (payload) => {
                 const newMsg = payload.new as Message
-                // Optimistically update or re-fetch? optimistically is faster.
-                // Note: Payload doesn't have the joined 'profiles' data.
-                // For MVP, we might simple re-fetch or just push raw.
-                // Let's push raw and set a temp name.
                 setMessages((prev) => [...prev, {
                     ...newMsg,
-                    sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Someone', // Wait for real-time join in future
+                    sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Someone',
                     is_own: true
                 }])
             })
