@@ -11,11 +11,14 @@ import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
+import { CreateGroupModal } from '@/components/chat/CreateGroupModal'
+
 export function Sidebar() {
     const router = useRouter()
     const [activeTab, setActiveTab] = useState<'friends' | 'search' | 'requests'>('friends')
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [showProfileModal, setShowProfileModal] = useState(false)
+    const [showGroupModal, setShowGroupModal] = useState(false)
     const [showMenu, setShowMenu] = useState(false)
 
     // Data States
@@ -23,6 +26,7 @@ export function Sidebar() {
     const [searchResults, setSearchResults] = useState<any[]>([])
     const [incomingRequests, setIncomingRequests] = useState<any[]>([])
     const [searchQuery, setSearchQuery] = useState('')
+    const [groups, setGroups] = useState<any[]>([]) // [NEW] Groups list
 
     useEffect(() => {
         fetchSession()
@@ -105,6 +109,18 @@ export function Sidebar() {
             } else {
                 setFriends([])
             }
+
+            // [NEW] 3. Fetch Groups I am in
+            const { data: myGroups } = await supabase
+                .from('channels')
+                .select('*')
+                .eq('type', 'group')
+            // .containedBy('id', user_in_members???) 
+            // Wait, policy allows us to SELECT if we are in members. So simple select works!
+            // But specifically we want `type='group'`.
+
+            setGroups(myGroups || [])
+
         } catch (e) {
             console.error("View miss?", e)
         }
@@ -168,6 +184,10 @@ export function Sidebar() {
                     </button>
                     {showMenu && (
                         <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
+                            <button onClick={() => { setShowGroupModal(true); setShowMenu(false) }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 flex items-center gap-3 text-zinc-300">
+                                <Users className="w-4 h-4" /> Create New Group
+                            </button>
+                            <div className="h-px bg-white/5 my-1" />
                             <button onClick={() => { setShowProfileModal(true); setShowMenu(false) }} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 flex items-center gap-3 text-zinc-300">
                                 <Settings className="w-4 h-4" /> Profile & Settings
                             </button>
@@ -181,6 +201,8 @@ export function Sidebar() {
             </div>
 
             {showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} />}
+            {showGroupModal && <CreateGroupModal onClose={() => setShowGroupModal(false)} currentUser={currentUser} onGroupCreated={() => fetchInitialData(currentUser?.id)} />}
+
             <ProfileSetup onComplete={() => fetchSession()} />
 
             {/* Tabs */}
@@ -189,7 +211,7 @@ export function Sidebar() {
                     onClick={() => setActiveTab('friends')}
                     className={cn("flex flex-col items-center justify-center p-2 rounded-lg transition-colors text-xs font-medium", activeTab === 'friends' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300')}
                 >
-                    <Users className="w-5 h-5 mb-1" /> Friends
+                    <Users className="w-5 h-5 mb-1" /> Chats
                 </button>
                 <button
                     onClick={() => setActiveTab('search')}
@@ -209,7 +231,7 @@ export function Sidebar() {
             </div>
 
             <ScrollArea className="flex-1 p-2">
-                {/* TAB: FRIENDS */}
+                {/* TAB: FRIENDS (CHATS) */}
                 {activeTab === 'friends' && (
                     <div className="space-y-1">
                         {/* Global Chat Item */}
@@ -222,14 +244,33 @@ export function Sidebar() {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <span className="font-semibold text-sm text-zinc-200 block">Global Chat</span>
-                                <span className="text-xs text-purple-400">Public Channel</span>
                             </div>
                         </div>
 
+                        {/* GROUPS List */}
+                        {groups.length > 0 && (
+                            <>
+                                <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Groups</div>
+                                {groups.map(group => (
+                                    <div
+                                        key={group.id}
+                                        onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&type=group`)}
+                                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
+                                    >
+                                        <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                            <Users className="w-4 h-4 text-zinc-400" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <span className="font-semibold text-sm text-zinc-200 block">{group.name}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+                        )}
+
+                        <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-2">Direct Messages</div>
                         {friends.length === 0 ? (
-                            <div className="text-center p-4 text-zinc-500 text-sm">
-                                No friends yet.<br />Go to "Find" to add people!
-                            </div>
+                            <div className="text-center p-4 text-zinc-500 text-sm">No friends yet.</div>
                         ) : (
                             friends.map(friend => {
                                 // Deterministic Channel ID: dm_minId_maxId
