@@ -21,7 +21,10 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     const [isAdmin, setIsAdmin] = useState(false)
     const [inviteLink, setInviteLink] = useState('')
     const [copied, setCopied] = useState(false)
+    const [inviteLink, setInviteLink] = useState('')
+    const [copied, setCopied] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const [isMuted, setIsMuted] = useState(false)
 
     // Edit Form
     const [editName, setEditName] = useState('')
@@ -57,8 +60,10 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
             setMembers(memberData || [])
 
             // 3. Check My Role
+            // 3. Check My Role & Status
             const myMembership = memberData?.find((m: any) => m.user_id === currentUser.id)
             setIsAdmin(myMembership?.role === 'owner' || myMembership?.role === 'admin')
+            setIsMuted(myMembership?.muted || false)
 
             // 4. Get Invite Link (if exists)
             if (channelData?.invite_slug) {
@@ -233,6 +238,20 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                                         <Button size="icon" variant="ghost" className="w-8 h-8" onClick={() => setIsEditing(false)}><X className="w-4 h-4" /></Button>
                                     </div>
                                 )}
+                            </div>
+
+                            <div className="mt-6">
+                                <Button
+                                    variant="outline"
+                                    className={`w-full justify-between ${isMuted ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-white/5 border-white/10'}`}
+                                    onClick={toggleMute}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        {isMuted ? <AlertTriangle className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                                        {isMuted ? 'Notifications Muted' : 'Mute Notifications'}
+                                    </span>
+                                    <span className="text-xs">{isMuted ? 'On' : 'Off'}</span>
+                                </Button>
                             </div>
 
                             {/* Invite Link Section */}
