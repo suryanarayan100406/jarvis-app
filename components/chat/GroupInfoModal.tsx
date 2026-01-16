@@ -21,8 +21,6 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     const [isAdmin, setIsAdmin] = useState(false)
     const [inviteLink, setInviteLink] = useState('')
     const [copied, setCopied] = useState(false)
-    const [inviteLink, setInviteLink] = useState('')
-    const [copied, setCopied] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [isMuted, setIsMuted] = useState(false)
 
