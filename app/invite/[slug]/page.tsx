@@ -30,7 +30,7 @@ export default function InvitePage() {
 
             // 2. Call RPC
             // Note: The RPC checks if valid, if expired, and if already member.
-            const { data: channelId, error } = await supabase.rpc('join_via_invite', { slug })
+            const { data: channelId, error } = await supabase.rpc('join_via_invite', { p_invite_slug: slug })
 
             if (error) throw error
 
