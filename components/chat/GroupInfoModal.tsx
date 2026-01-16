@@ -149,6 +149,68 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
         }
     }
 
+    const handlePromote = async (userId: string) => {
+        if (!confirm("Promote this user to Admin?")) return
+        await updateRole(userId, 'admin')
+    }
+
+    const handleDemote = async (userId: string) => {
+        if (!confirm("Demote this Admin back to Member?")) return
+        await updateRole(userId, 'member')
+    }
+
+    const handleTransferOwnership = async (userId: string) => {
+        const confirmTransfer = window.confirm("TRANSFER OWNERSHIP? You will be demoted to Admin and they will become the Owner. This cannot be undone.")
+        if (!confirmTransfer) return
+
+        // 1. Demote self to Admin
+        const { error: error1 } = await supabase.from('channel_members')
+            .update({ role: 'admin' })
+            .eq('channel_id', channelId)
+            .eq('user_id', currentUser.id)
+
+        if (error1) { alert("Failed to demote self"); return }
+
+        // 2. Promote target to Owner
+        const { error: error2 } = await supabase.from('channel_members')
+            .update({ role: 'owner' })
+            .eq('channel_id', channelId)
+            .eq('user_id', userId)
+
+        if (error2) { alert("Failed to promote new owner"); return }
+
+        fetchGroupDetails()
+    }
+
+    const updateRole = async (userId: string, newRole: string) => {
+        const { error } = await supabase.from('channel_members')
+            .update({ role: newRole })
+            .eq('channel_id', channelId)
+            .eq('user_id', userId)
+
+        if (error) {
+            alert("Failed to update role: " + error.message)
+        } else {
+            fetchGroupDetails()
+        }
+    }
+
+    const toggleMute = async () => {
+        const newMutedStatus = !isMuted
+        setIsMuted(newMutedStatus)
+
+        const { error } = await supabase
+            .from('channel_members')
+            .update({ muted: newMutedStatus })
+            .eq('channel_id', channelId)
+            .eq('user_id', currentUser.id)
+
+        if (error) {
+            alert("Failed to update mute status")
+            setIsMuted(!newMutedStatus) // Revert
+        }
+    }
+
     const handleDeleteGroup = async () => {
         const confirmDelete = window.confirm("DANGER ZONE: This will delete the group and all messages permanently. This cannot be undone. Are you sure?")
         if (!confirmDelete) return
