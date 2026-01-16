@@ -148,7 +148,6 @@ export default function ChatInterface() {
                             // Check ownership accurately
                             const isOwn = currentUser && msg.user_id === currentUser.id
                             return (
-                            return (
                                 <MessageBubble
                                     key={msg.id}
                                     id={msg.id}
