@@ -38,6 +38,17 @@ export async function POST(req: Request) {
         }
 
         if (!summaryText) {
+            // Check if it was a 404 (Model not found / API not enabled)
+            const is404 = errors.some(e => e.includes("404") || e.includes("not found"))
+
+            if (is404) {
+                throw new Error(
+                    "Models not found (404). \n" +
+                    "Please ensure the 'Generative Language API' is ENABLED in your Google Cloud Console for this API Key.\n" +
+                    "Also check if your project has billing enabled (if required)."
+                )
+            }
+
             throw new Error(`All models failed.\nErrors:\n${errors.join('\n')}`)
         }
 
