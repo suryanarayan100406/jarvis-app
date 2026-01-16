@@ -12,33 +12,42 @@ interface MessageProps {
     timestamp: string
     senderName?: string
     onDelete?: (id: string) => void
+    reactions?: Record<string, string[]>
+    currentUserId?: string
+    onReact?: (id: string, emoji: string) => void
 }
 
+// Gen Z / Modern Reaction Set
 const REACTIONS = [
-    { icon: ThumbsUp, label: 'like', color: 'text-blue-400' },
-    { icon: Heart, label: 'love', color: 'text-red-500' },
-    { icon: Flame, label: 'fire', color: 'text-orange-500' },
-    { icon: Zap, label: 'shock', color: 'text-yellow-400' },
-    { icon: Smile, label: 'haha', color: 'text-yellow-300' },
+    { label: '🔥' },
+    { label: '💀' }, // Skull (Dead)
+    { label: '🤡' }, // Clown (Fool)
+    { label: '+1' }, // Agree
+    { label: '67' }, // Custom request (Assuming slang)
+    { label: 'Delulu' }, // Delusional
+    { label: 'Real' }, // Relatable
+    { label: 'Bet' }, // Agreement
 ]
 
-export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete }: MessageProps) {
+export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact }: MessageProps) {
     const [showReactions, setShowReactions] = useState(false)
-    const [reactions, setReactions] = useState<string[]>([])
 
-    const addReaction = (label: string) => {
-        setReactions(prev => [...prev, label])
-        setShowReactions(false)
-    }
+    // Compute active reactions
+    // Should be an array of { emoji: '🔥', count: 3, hasReacted: true }
+    const displayedReactions = Object.entries(reactions).map(([emoji, userIds]) => ({
+        emoji,
+        count: userIds.length,
+        hasReacted: currentUserId ? userIds.includes(currentUserId) : false
+    })).filter(r => r.count > 0) // Only show if count > 0
 
     return (
         <div
-            className={cn("flex w-full mb-4", isOwn ? "justify-end" : "justify-start")}
+            className={cn("flex w-full mb-6", isOwn ? "justify-end" : "justify-start")}
             onMouseLeave={() => setShowReactions(false)}
         >
             <div className="relative group max-w-[80%] md:max-w-[60%] flex gap-2 items-center">
 
-                {/* Delete Button (Left side if own) - Hidden by default, shown on group hover */}
+                {/* Delete Button (Left side if own) */}
                 {isOwn && onDelete && (
                     <button
                         onClick={() => {
@@ -75,35 +84,52 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                             {timestamp}
                         </span>
 
-                        {/* Existing Reactions */}
-                        {reactions.length > 0 && (
-                            <div className="absolute -bottom-3 right-0 flex -space-x-1">
-                                {reactions.slice(0, 3).map((r, i) => (
-                                    <div key={i} className="bg-zinc-800 rounded-full p-1 border border-black text-[10px]">
-                                        ❤️
-                                    </div>
+                        {/* Rendered Reactions (Pills below message) */}
+                        {displayedReactions.length > 0 && (
+                            <div className="absolute -bottom-6 right-0 flex gap-1 flex-wrap justify-end min-w-[100px]">
+                                {displayedReactions.map((r) => (
+                                    <button
+                                        key={r.emoji}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            onReact?.(id, r.emoji)
+                                        }}
+                                        className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded-full border flex items-center gap-1 transition-colors",
+                                            r.hasReacted
+                                                ? "bg-purple-500/20 border-purple-500 text-purple-200"
+                                                : "bg-zinc-900/80 border-white/10 text-zinc-400 hover:bg-white/10"
+                                        )}
+                                    >
+                                        <span>{r.emoji}</span>
+                                        <span className="font-bold">{r.count}</span>
+                                    </button>
                                 ))}
                             </div>
                         )}
                     </motion.div>
 
-                    {/* Reaction Picker */}
+                    {/* Reaction Picker (Popup) */}
                     <AnimatePresence>
-                        {(showReactions || false) && (
+                        {showReactions && (
                             <motion.div
                                 initial={{ scale: 0, opacity: 0, y: 10 }}
                                 animate={{ scale: 1, opacity: 1, y: -50 }}
                                 exit={{ scale: 0, opacity: 0 }}
-                                className="absolute bottom-full left-0 bg-zinc-900/90 backdrop-blur-md border border-white/10 rounded-full p-2 flex gap-2 shadow-2xl z-50 mb-2"
+                                className="absolute bottom-full left-0 bg-zinc-900/90 backdrop-blur-md border border-white/10 rounded-full p-2 flex gap-1 shadow-2xl z-50 mb-2 items-center"
                             >
-                                {REACTIONS.map((R, i) => (
+                                {REACTIONS.map((R) => (
                                     <motion.button
                                         key={R.label}
-                                        whileHover={{ scale: 1.5, y: -10 }}
-                                        onClick={() => addReaction(R.label)}
-                                        className={cn("p-2 rounded-full hover:bg-white/10 transition-colors", R.color)}
+                                        whileHover={{ scale: 1.2, y: -5 }}
+                                        onClick={() => {
+                                            onReact?.(id, R.label)
+                                            setShowReactions(false)
+                                        }}
+                                        className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-lg"
+                                        title={R.label}
                                     >
-                                        <R.icon className="w-5 h-5" fill="currentColor" fillOpacity={0.2} />
+                                        {R.label}
                                     </motion.button>
                                 ))}
                             </motion.div>

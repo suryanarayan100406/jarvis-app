@@ -8,8 +8,22 @@ export type Message = {
     is_anonymous: boolean
     anonymous_alias: string | null
     inserted_at: string
+    reactions: Record<string, string[]>
     sender_name?: string // Computed
     is_own?: boolean     // Computed
+}
+
+// ... imports
+export type Message = {
+    id: string
+    content: string
+    user_id: string | null
+    is_anonymous: boolean
+    anonymous_alias: string | null
+    inserted_at: string
+    reactions: Record<string, string[]> // { "🔥": ["user_id_1", "user_id_2"] }
+    sender_name?: string
+    is_own?: boolean
 }
 
 export function useChatMessages(channelId: string = 'global') {
@@ -25,17 +39,17 @@ export function useChatMessages(channelId: string = 'global') {
           *,
           profiles:user_id ( username, avatar_url )
         `)
-                .eq('channel_id', channelId) // Filter by channel!
+                .eq('channel_id', channelId)
                 .order('inserted_at', { ascending: true })
                 .limit(50)
 
             if (error) console.error('Error fetching messages:', error)
             else {
-                // Map to friendlier format
                 const formatted = data.map(msg => ({
                     ...msg,
                     sender_name: msg.is_anonymous ? (msg.anonymous_alias || 'Anonymous') : msg.profiles?.username || 'Unknown',
-                    is_own: false // We need to check auth state to know this, doing next
+                    reactions: msg.reactions || {},
+                    is_own: false
                 }))
                 setMessages(formatted)
             }
@@ -44,21 +58,33 @@ export function useChatMessages(channelId: string = 'global') {
 
         fetchMessages()
 
-        // 2. Subscribe to new messages
+        // 2. Subscribe to changes
         const channel = supabase
             .channel(`chat:${channelId}`)
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
                 table: 'messages',
-                filter: `channel_id=eq.${channelId}` // Filter realtime events too
+                filter: `channel_id=eq.${channelId}`
             }, (payload) => {
                 const newMsg = payload.new as Message
                 setMessages((prev) => [...prev, {
                     ...newMsg,
                     sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Someone',
+                    reactions: newMsg.reactions || {},
                     is_own: true
                 }])
+            })
+            .on('postgres_changes', {
+                event: 'UPDATE', // Listen for Reaction updates
+                schema: 'public',
+                table: 'messages',
+                filter: `channel_id=eq.${channelId}`
+            }, (payload) => {
+                const updatedMsg = payload.new as Message
+                setMessages(prev => prev.map(msg =>
+                    msg.id === updatedMsg.id ? { ...msg, reactions: updatedMsg.reactions || {} } : msg
+                ))
             })
             .subscribe()
 
@@ -67,18 +93,43 @@ export function useChatMessages(channelId: string = 'global') {
         }
     }, [channelId])
 
-    // 3. Delete function
     const deleteMessage = async (id: string) => {
-        // Optimistic update
         setMessages(prev => prev.filter(m => m.id !== id))
-
-        const { error } = await supabase.from('messages').delete().eq('id', id)
-        if (error) {
-            console.error("Error deleting", error)
-            // Revert would be here in robust app
-            alert("Failed to delete message")
-        }
+        await supabase.from('messages').delete().eq('id', id)
     }
 
-    return { messages, isLoading, setMessages, deleteMessage }
+    const toggleReaction = async (messageId: string, userId: string, emoji: string) => {
+        // 1. Find the message locally to get current reactions
+        const message = messages.find(m => m.id === messageId)
+        if (!message) return
+
+        const currentReactions = message.reactions || {}
+        const userList = currentReactions[emoji] || []
+
+        let newReactions = { ...currentReactions }
+
+        if (userList.includes(userId)) {
+            // Remove reaction
+            newReactions[emoji] = userList.filter(id => id !== userId)
+            if (newReactions[emoji].length === 0) delete newReactions[emoji] // Clean up empty keys
+        } else {
+            // Add reaction
+            newReactions[emoji] = [...userList, userId]
+        }
+
+        // 2. Optimistic Update
+        setMessages(prev => prev.map(m =>
+            m.id === messageId ? { ...m, reactions: newReactions } : m
+        ))
+
+        // 3. Persist to DB
+        const { error } = await supabase
+            .from('messages')
+            .update({ reactions: newReactions })
+            .eq('id', messageId)
+
+        if (error) console.error("Reaction update failed", error)
+    }
+
+    return { messages, isLoading, setMessages, deleteMessage, toggleReaction }
 }

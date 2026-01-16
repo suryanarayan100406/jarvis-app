@@ -16,7 +16,7 @@ export default function ChatInterface() {
     const chatName = searchParams.get('name') || 'Global Chat'
     const chatAvatar = searchParams.get('avatar')
 
-    const { messages, isLoading, deleteMessage } = useChatMessages(channelId)
+    const { messages, isLoading, deleteMessage, toggleReaction } = useChatMessages(channelId)
     const router = useRouter()
     const [inputValue, setInputValue] = useState('')
     const [currentUser, setCurrentUser] = useState<any>(null)
@@ -139,6 +139,7 @@ export default function ChatInterface() {
                             // Check ownership accurately
                             const isOwn = currentUser && msg.user_id === currentUser.id
                             return (
+                            return (
                                 <MessageBubble
                                     key={msg.id}
                                     id={msg.id}
@@ -147,6 +148,10 @@ export default function ChatInterface() {
                                     timestamp={new Date(msg.inserted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     senderName={msg.sender_name}
                                     onDelete={deleteMessage}
+                                    // Reaction Props
+                                    reactions={msg.reactions}
+                                    currentUserId={currentUser?.id}
+                                    onReact={(id, emoji) => toggleReaction(id, currentUser?.id, emoji)}
                                 />
                             )
                         })}
