@@ -12,10 +12,10 @@ export async function POST(req: Request) {
 
         const genAI = new GoogleGenerativeAI(apiKey)
 
-        // List of models to try in order of preference
-        const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.0-pro", "gemini-pro"]
+        // List of models to try (Modern versions only)
+        const models = ["gemini-1.5-flash", "gemini-1.5-flash-001", "gemini-1.5-pro", "gemini-1.5-pro-001"]
 
-        let lastError = null;
+        const errors = [];
         let summaryText = null;
 
         for (const modelName of models) {
@@ -32,13 +32,13 @@ export async function POST(req: Request) {
                 break;
             } catch (e: any) {
                 console.warn(`Model ${modelName} failed:`, e.message)
-                lastError = e
+                errors.push(`${modelName}: ${e.message}`)
                 // Continue to next model
             }
         }
 
         if (!summaryText) {
-            throw lastError || new Error("All models failed")
+            throw new Error(`All models failed.\nErrors:\n${errors.join('\n')}`)
         }
 
         return NextResponse.json({ summary: summaryText })
