@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { useChatMessages } from '@/hooks/useChatMessages'
 
 export default function ChatInterface() {
-    const { messages, isLoading } = useChatMessages()
+    const { messages, isLoading, deleteMessage } = useChatMessages()
     const [inputValue, setInputValue] = useState('')
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [summary, setSummary] = useState<string | null>(null)
@@ -116,10 +116,12 @@ export default function ChatInterface() {
                             return (
                                 <MessageBubble
                                     key={msg.id}
+                                    id={msg.id}
                                     isOwn={isOwn || false}
                                     content={msg.content}
                                     timestamp={new Date(msg.inserted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     senderName={msg.sender_name}
+                                    onDelete={deleteMessage}
                                 />
                             )
                         })}

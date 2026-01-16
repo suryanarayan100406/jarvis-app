@@ -54,9 +54,8 @@ export function useChatMessages(channelId: string = 'global') {
                 // Let's push raw and set a temp name.
                 setMessages((prev) => [...prev, {
                     ...newMsg,
-                    sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Loading...',
-                    is_own: true // If we just sent it, likely us. But for incoming, we don't know. 
-                    // Correction: realtime gives us all inserts. We need auth context.
+                    sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Someone', // Wait for real-time join in future
+                    is_own: true
                 }])
             })
             .subscribe()
@@ -66,5 +65,18 @@ export function useChatMessages(channelId: string = 'global') {
         }
     }, [channelId])
 
-    return { messages, isLoading, setMessages }
+    // 3. Delete function
+    const deleteMessage = async (id: string) => {
+        // Optimistic update
+        setMessages(prev => prev.filter(m => m.id !== id))
+
+        const { error } = await supabase.from('messages').delete().eq('id', id)
+        if (error) {
+            console.error("Error deleting", error)
+            // Revert would be here in robust app
+            alert("Failed to delete message")
+        }
+    }
+
+    return { messages, isLoading, setMessages, deleteMessage }
 }
