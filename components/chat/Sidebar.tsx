@@ -2,7 +2,7 @@
 
 import { ScrollArea } from '@/components/ui/ScrollArea' // Need to create or standard div
 import { Avatar } from '@/components/ui/Avatar' // Need to create
-import { formatDistanceToNow } from 'date-fns' // If installed, otherwise just mocking
+
 
 // Mock Data
 const MOCK_CHATS = [
