@@ -191,6 +191,20 @@ export function Sidebar() {
                 {/* TAB: FRIENDS */}
                 {activeTab === 'friends' && (
                     <div className="space-y-1">
+                        {/* Global Chat Item */}
+                        <div
+                            onClick={() => router.push('/chat?chatId=global&name=Global Chat')}
+                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors mb-2 bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20"
+                        >
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center">
+                                <span className="text-xs font-bold text-white">GC</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <span className="font-semibold text-sm text-zinc-200 block">Global Chat</span>
+                                <span className="text-xs text-purple-400">Public Channel</span>
+                            </div>
+                        </div>
+
                         {friends.length === 0 ? (
                             <div className="text-center p-4 text-zinc-500 text-sm">
                                 No friends yet.<br />Go to "Find" to add people!

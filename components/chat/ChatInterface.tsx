@@ -98,7 +98,7 @@ export default function ChatInterface() {
 
 
 
-            // ... inside component ...
+
 
             {/* Chat Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-secondary/20">
