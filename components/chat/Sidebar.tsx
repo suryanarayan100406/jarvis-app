@@ -248,27 +248,27 @@ export function Sidebar() {
                         </div>
 
                         {/* GROUPS List */}
-                        {groups.length > 0 && (
-                            <>
-                                <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Groups</div>
-                                {groups.map(group => (
-                                    <div
-                                        key={group.id}
-                                        onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&type=group`)}
-                                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
-                                    >
-                                        <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
-                                            <Users className="w-4 h-4 text-zinc-400" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <span className="font-semibold text-sm text-zinc-200 block">{group.name}</span>
-                                        </div>
+                        <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-4">Groups</div>
+                        {groups.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-zinc-600 italic">No groups joined.</div>
+                        ) : (
+                            groups.map(group => (
+                                <div
+                                    key={group.id}
+                                    onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&type=group`)}
+                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
+                                >
+                                    <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                        <Users className="w-4 h-4 text-zinc-400" />
                                     </div>
-                                ))}
-                            </>
+                                    <div className="flex-1 min-w-0">
+                                        <span className="font-semibold text-sm text-zinc-200 block">{group.name}</span>
+                                    </div>
+                                </div>
+                            ))
                         )}
 
-                        <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-2">Direct Messages</div>
+                        <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-4">Direct Messages</div>
                         {friends.length === 0 ? (
                             <div className="text-center p-4 text-zinc-500 text-sm">No friends yet.</div>
                         ) : (
