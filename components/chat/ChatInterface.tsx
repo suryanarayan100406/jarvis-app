@@ -44,10 +44,14 @@ export default function ChatInterface() {
                 body: JSON.stringify({ messages: recentMessages })
             })
             const data = await response.json()
-            setSummary(data.summary)
-        } catch (e) {
+            if (!response.ok) {
+                setSummary(`Error: ${data.summary}\nDetails: ${data.details || 'Unknown error'}`)
+            } else {
+                setSummary(data.summary)
+            }
+        } catch (e: any) {
             console.error(e)
-            setSummary("Failed to summarize. Check API Key.")
+            setSummary(`Failed to summarize. Check Console.\n${e.message}`)
         } finally {
             setIsSummarizing(false)
         }
