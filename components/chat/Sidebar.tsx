@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/ScrollArea'
 import { Avatar } from '@/components/ui/Avatar'
 import { supabase } from '@/lib/supabase'
 import { ProfileSetup } from '@/components/auth/ProfileSetup'
+import { MoreVertical, LogOut, Settings } from 'lucide-react'
 
 export function Sidebar() {
     const [users, setUsers] = useState<any[]>([])
