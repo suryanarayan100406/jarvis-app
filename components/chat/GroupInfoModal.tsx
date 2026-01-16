@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Users, LogOut, Shield, Crown, Copy, Trash2, Edit2, Check, X } from 'lucide-react'
+import { Users, LogOut, Shield, Crown, Copy, Trash2, Edit2, Check, X, Camera, Loader2, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface GroupInfoModalProps {
@@ -26,6 +26,8 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     // Edit Form
     const [editName, setEditName] = useState('')
     const [editDesc, setEditDesc] = useState('')
+    const [uploadingImage, setUploadingImage] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         if (!channelId) return
@@ -104,6 +106,60 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
         fetchGroupDetails()
     }
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return
+
+        const file = e.target.files[0]
+        setUploadingImage(true)
+
+        try {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `group_${channelId}_${Date.now()}.${fileExt}`
+            const filePath = `${fileName}`
+
+            // 1. Upload
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file)
+
+            if (uploadError) throw uploadError
+
+            // 2. Get URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath)
+
+            // 3. Update Channel
+            const { error: updateError } = await supabase
+                .from('channels')
+                .update({ image_url: publicUrl })
+                .eq('id', channelId)
+
+            if (updateError) throw updateError
+
+            fetchGroupDetails()
+        } catch (error: any) {
+            console.error('Upload failed:', error)
+            alert('Failed to upload image: ' + error.message)
+        } finally {
+            setUploadingImage(false)
+        }
+    }
+
+    const handleDeleteGroup = async () => {
+        const confirmDelete = window.confirm("DANGER ZONE: This will delete the group and all messages permanently. This cannot be undone. Are you sure?")
+        if (!confirmDelete) return
+
+        try {
+            const { error } = await supabase.from('channels').delete().eq('id', channelId)
+            if (error) throw error
+
+            window.location.reload()
+        } catch (e: any) {
+            alert("Error deleting group: " + e.message)
+        }
+    }
+
     const generateInvite = async () => {
         // Call RPC to generate valid slug (Parameter name MUST match SQL function arg)
         const { data, error } = await supabase.rpc('regenerate_invite_slug', { target_channel_id: channelId })
@@ -127,8 +183,26 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                     <div className="flex flex-col h-[600px]">
                         {/* Header Image Area */}
                         <div className="h-32 bg-gradient-to-r from-purple-900 to-indigo-900 relative">
-                            <div className="absolute -bottom-10 left-6">
+                            <div className="absolute -bottom-10 left-6 group">
                                 <Avatar className="w-20 h-20 border-4 border-zinc-900 shadow-xl" src={channel.image_url} fallback={channel.name[0]} />
+                                {isAdmin && (
+                                    <>
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={uploadingImage}
+                                            className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                        >
+                                            {uploadingImage ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Camera className="w-6 h-6 text-white" />}
+                                        </button>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                        />
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -214,6 +288,12 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                         {/* Footer Actions */}
                         <div className="p-4 mt-auto border-t border-white/5 flex justify-end gap-2 bg-black/20">
                             <Button variant="ghost" onClick={onClose}>Close</Button>
+                            {/* Owner Only: Delete Group */}
+                            {members.find(m => m.user_id === currentUser.id)?.role === 'owner' && (
+                                <Button variant="destructive" onClick={handleDeleteGroup} className="bg-red-600 hover:bg-red-700 text-white border-0">
+                                    <Trash2 className="w-4 h-4 mr-2" /> Delete Group
+                                </Button>
+                            )}
                             <Button variant="destructive" onClick={handleLeaveGroup} className="bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-400">
                                 <LogOut className="w-4 h-4 mr-2" /> Leave Group
                             </Button>
