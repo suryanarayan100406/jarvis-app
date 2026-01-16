@@ -1,4 +1,18 @@
--- FIX RLS: SAFE TYPE HANDLING
+-- FIX RLS & SCHEMA TYPES
+
+-- 0. CRITICAL FIX: Ensure messages.channel_id is TEXT
+-- We need this to support 'global' and 'dm_...' IDs alongside UUIDs.
+do $$ 
+begin
+    -- Drop the foreign key if it exists (it restricts us to only UUIDs in channels table)
+    if exists (select 1 from information_schema.table_constraints where constraint_name = 'messages_channel_id_fkey') then
+        alter table public.messages drop constraint messages_channel_id_fkey;
+    end if;
+end $$;
+
+-- Force column to text (safe to run even if already text)
+alter table public.messages alter column channel_id type text;
+
 
 -- 1. Safe Membership Check (Accepts TEXT, handles UUID conversion)
 create or replace function public.check_group_member(channel_id_text text)
@@ -7,7 +21,7 @@ language plpgsql
 security definer
 as $$
 begin
-    -- Check if it looks like a valid UUID
+    -- Check if it looks like a valid UUID (simple regex)
     if channel_id_text !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
         return false;
     end if;
