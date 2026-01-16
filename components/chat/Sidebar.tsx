@@ -379,9 +379,10 @@ export function Sidebar() {
                                     </div>
                                 ))}
                             </div>
+                        </div>
                     )}
 
-                        </ScrollArea>
+                </ScrollArea>
             </div>
 
             {showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} />}
