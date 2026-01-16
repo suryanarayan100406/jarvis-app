@@ -12,6 +12,27 @@ export default function ChatInterface() {
     const { messages, isLoading } = useChatMessages()
     const [inputValue, setInputValue] = useState('')
     const [currentUser, setCurrentUser] = useState<any>(null)
+    const [summary, setSummary] = useState<string | null>(null)
+    const [isSummarizing, setIsSummarizing] = useState(false)
+
+    const handleSummarize = async () => {
+        setIsSummarizing(true)
+        try {
+            // Collect last 20 messages content
+            const recentMessages = messages.map(m => `${m.sender_name}: ${m.content}`).slice(-20)
+
+            const response = await fetch('/api/summarize', {
+                method: 'POST',
+                body: JSON.stringify({ messages: recentMessages })
+            })
+            const data = await response.json()
+            setSummary(data.summary)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setIsSummarizing(false)
+        }
+    }
 
     useEffect(() => {
         // Get current user
@@ -42,7 +63,22 @@ export default function ChatInterface() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-background/50 backdrop-blur-3xl">
+        <div className="flex flex-col h-full bg-background/50 backdrop-blur-3xl relative">
+            {/* Summary Overlay */}
+            {summary && (
+                <div className="absolute inset-x-4 top-20 z-50 bg-black/80 border border-purple-500/50 p-6 rounded-xl backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in duration-300">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-purple-400 font-bold flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" /> The Tea (Summary)
+                        </h3>
+                        <button onClick={() => setSummary(null)} className="text-muted-foreground hover:text-white">✕</button>
+                    </div>
+                    <p className="text-white/90 leading-relaxed text-sm">
+                        {summary}
+                    </p>
+                </div>
+            )}
+
             {/* Chat Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-secondary/20">
                 <div className="flex items-center gap-3">
@@ -53,8 +89,15 @@ export default function ChatInterface() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-purple-400 hover:text-purple-300 hover:bg-purple-900/20">
-                        <Sparkles className="w-4 h-4 mr-2" /> Summarize
+                    <Button
+                        onClick={handleSummarize}
+                        disabled={isSummarizing}
+                        variant="ghost"
+                        size="sm"
+                        className="text-purple-400 hover:text-purple-300 hover:bg-purple-900/20"
+                    >
+                        {isSummarizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                        {isSummarizing ? 'Cooking...' : 'Summarize'}
                     </Button>
                 </div>
             </div>
