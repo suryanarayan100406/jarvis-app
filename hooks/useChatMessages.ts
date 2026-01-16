@@ -79,6 +79,14 @@ export function useChatMessages(channelId: string = 'global') {
                     msg.id === updatedMsg.id ? { ...msg, reactions: updatedMsg.reactions || {} } : msg
                 ))
             })
+            .on('postgres_changes', {
+                event: 'DELETE',
+                schema: 'public',
+                table: 'messages',
+                filter: `channel_id=eq.${channelId}`
+            }, (payload) => {
+                setMessages(prev => prev.filter(msg => msg.id !== payload.old.id))
+            })
             .subscribe()
 
         return () => {
