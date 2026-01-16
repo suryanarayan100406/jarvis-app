@@ -105,8 +105,15 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     }
 
     const generateInvite = async () => {
-        // Call RPC to generate valid slug
-        const { data } = await supabase.rpc('regenerate_invite_slug', { channel_uuid: channelId })
+        // Call RPC to generate valid slug (Parameter name MUST match SQL function arg)
+        const { data, error } = await supabase.rpc('regenerate_invite_slug', { target_channel_id: channelId })
+
+        if (error) {
+            console.error(error)
+            alert("Failed to generate link: " + error.message)
+            return
+        }
+
         // Verify response, then refresh
         fetchGroupDetails()
     }
