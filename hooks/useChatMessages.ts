@@ -1,19 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-export type Message = {
-    id: string
-    content: string
-    user_id: string | null
-    is_anonymous: boolean
-    anonymous_alias: string | null
-    inserted_at: string
-    reactions: Record<string, string[]>
-    sender_name?: string // Computed
-    is_own?: boolean     // Computed
-}
 
-// ... imports
 export type Message = {
     id: string
     content: string
