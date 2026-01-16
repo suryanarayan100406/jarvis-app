@@ -76,16 +76,26 @@ export function Sidebar() {
         // Note: 'friends_view' is the SQL view we created. If it doesn't work, we manually query.
         // Let's assume the view works. If not, we'll fail gracefully.
         try {
+            // A. Get Friends
             const { data: friendRows } = await supabase.from('friends_view').select('friend_id').eq('user_id', userId)
+
             if (friendRows && friendRows.length > 0) {
                 const friendIds = friendRows.map(r => r.friend_id)
                 const { data: friendsData } = await supabase.from('profiles').select('*').in('id', friendIds)
-                // Mock Unread Counts for UI Demo
-                const friendsWithUnread = (friendsData || []).map(f => ({
-                    ...f,
-                    unread: Math.floor(Math.random() * 5) // Simulating 0-4 unread messages
-                }))
-                setFriends(friendsWithUnread)
+
+                // B. Get Real Unread Counts via RPC
+                const { data: stats } = await supabase.rpc('get_sidebar_stats')
+
+                // Map Stats to Friends
+                const friendsWithStats = (friendsData || []).map(f => {
+                    const stat = (stats || []).find((s: any) => s.friend_id === f.id)
+                    return {
+                        ...f,
+                        unread: stat ? stat.unread_count : 0
+                    }
+                })
+
+                setFriends(friendsWithStats)
             } else {
                 setFriends([])
             }

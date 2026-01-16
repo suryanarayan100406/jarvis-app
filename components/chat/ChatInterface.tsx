@@ -50,9 +50,18 @@ export default function ChatInterface() {
                 router.push('/login')
             } else {
                 setCurrentUser(data.user)
+                // Mark as Read
+                if (channelId) {
+                    supabase.from('user_last_read').upsert(
+                        { user_id: data.user.id, channel_id: channelId, last_read_at: new Date().toISOString() },
+                        { onConflict: 'user_id,channel_id' }
+                    ).then(({ error }) => {
+                        if (error) console.error("Failed to mark read", error)
+                    })
+                }
             }
         })
-    }, [])
+    }, [channelId])
 
     // Prevent rendering if not logged in (optional, but good for flicker)
     if (!currentUser) return <div className="h-full flex items-center justify-center text-muted-foreground"><Loader2 className="animate-spin" /></div>
