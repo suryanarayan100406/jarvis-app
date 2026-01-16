@@ -16,7 +16,7 @@ export default function ChatInterface() {
     const chatName = searchParams.get('name') || 'Global Chat'
     const chatAvatar = searchParams.get('avatar')
 
-    const { messages, isLoading, deleteMessage, toggleReaction } = useChatMessages(channelId)
+    const { messages, isLoading, deleteMessage, toggleReaction, addMessage } = useChatMessages(channelId)
     const router = useRouter()
     const [inputValue, setInputValue] = useState('')
     const [currentUser, setCurrentUser] = useState<any>(null)
@@ -83,8 +83,25 @@ export default function ChatInterface() {
         const content = inputValue
         setInputValue('') // Optimistic clear
 
-        // Insert into DB
+        // 1. Generate ID client-side for optimistic update logic
+        const tempId = crypto.randomUUID()
+
+        // 2. Optimistic Update
+        addMessage({
+            id: tempId,
+            content,
+            user_id: currentUser?.id,
+            is_anonymous: false,
+            anonymous_alias: null,
+            inserted_at: new Date().toISOString(),
+            reactions: {},
+            sender_name: currentUser?.username || 'Me',
+            is_own: true
+        })
+
+        // 3. Insert into DB (passing the ID so it matches!)
         const { error } = await supabase.from('messages').insert({
+            id: tempId, // <--- key trick
             content,
             user_id: currentUser?.id,
             channel_id: channelId,

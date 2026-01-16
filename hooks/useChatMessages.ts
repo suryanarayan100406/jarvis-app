@@ -55,69 +55,80 @@ export function useChatMessages(channelId: string = 'global') {
                 table: 'messages',
                 filter: `channel_id=eq.${channelId}`
             }, (payload) => {
-                const newMsg = payload.new as Message
-                setMessages((prev) => [...prev, {
-                    ...newMsg,
-                    sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Someone',
-                    reactions: newMsg.reactions || {},
-                    is_own: true
-                }])
-            })
-            .on('postgres_changes', {
-                event: 'UPDATE', // Listen for Reaction updates
-                schema: 'public',
-                table: 'messages',
-                filter: `channel_id=eq.${channelId}`
             }, (payload) => {
-                const updatedMsg = payload.new as Message
-                setMessages(prev => prev.map(msg =>
-                    msg.id === updatedMsg.id ? { ...msg, reactions: updatedMsg.reactions || {} } : msg
-                ))
+                const newMsg = payload.new as Message
+                setMessages((prev) => {
+                    // Prevent duplicate if we already added it optimistically
+                    if (prev.some(m => m.id === newMsg.id)) return prev
+
+                    return [...prev, {
+                        ...newMsg,
+                        sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Someone',
+                        reactions: newMsg.reactions || {},
+                        is_own: true
+                    }]
+                })
             })
-            .subscribe()
+    })
+        .on('postgres_changes', {
+            event: 'UPDATE', // Listen for Reaction updates
+            schema: 'public',
+            table: 'messages',
+            filter: `channel_id=eq.${channelId}`
+        }, (payload) => {
+            const updatedMsg = payload.new as Message
+            setMessages(prev => prev.map(msg =>
+                msg.id === updatedMsg.id ? { ...msg, reactions: updatedMsg.reactions || {} } : msg
+            ))
+        })
+        .subscribe()
 
-        return () => {
-            supabase.removeChannel(channel)
-        }
-    }, [channelId])
+    return () => {
+        supabase.removeChannel(channel)
+    }
+}, [channelId])
 
-    const deleteMessage = async (id: string) => {
-        setMessages(prev => prev.filter(m => m.id !== id))
-        await supabase.from('messages').delete().eq('id', id)
+const deleteMessage = async (id: string) => {
+    setMessages(prev => prev.filter(m => m.id !== id))
+    await supabase.from('messages').delete().eq('id', id)
+}
+
+const toggleReaction = async (messageId: string, userId: string, emoji: string) => {
+    // 1. Find the message locally to get current reactions
+    const message = messages.find(m => m.id === messageId)
+    if (!message) return
+
+    const currentReactions = message.reactions || {}
+    const userList = currentReactions[emoji] || []
+
+    let newReactions = { ...currentReactions }
+
+    if (userList.includes(userId)) {
+        // Remove reaction
+        newReactions[emoji] = userList.filter(id => id !== userId)
+        if (newReactions[emoji].length === 0) delete newReactions[emoji] // Clean up empty keys
+    } else {
+        // Add reaction
+        newReactions[emoji] = [...userList, userId]
     }
 
-    const toggleReaction = async (messageId: string, userId: string, emoji: string) => {
-        // 1. Find the message locally to get current reactions
-        const message = messages.find(m => m.id === messageId)
-        if (!message) return
+    // 2. Optimistic Update
+    setMessages(prev => prev.map(m =>
+        m.id === messageId ? { ...m, reactions: newReactions } : m
+    ))
 
-        const currentReactions = message.reactions || {}
-        const userList = currentReactions[emoji] || []
+    // 3. Persist to DB
+    const { error } = await supabase
+        .from('messages')
+        .update({ reactions: newReactions })
+        .eq('id', messageId)
 
-        let newReactions = { ...currentReactions }
+    if (error) console.error("Reaction update failed", error)
+}
 
-        if (userList.includes(userId)) {
-            // Remove reaction
-            newReactions[emoji] = userList.filter(id => id !== userId)
-            if (newReactions[emoji].length === 0) delete newReactions[emoji] // Clean up empty keys
-        } else {
-            // Add reaction
-            newReactions[emoji] = [...userList, userId]
-        }
+const addMessage = (msg: Message) => {
+    setMessages(prev => [...prev, msg])
+}
 
-        // 2. Optimistic Update
-        setMessages(prev => prev.map(m =>
-            m.id === messageId ? { ...m, reactions: newReactions } : m
-        ))
-
-        // 3. Persist to DB
-        const { error } = await supabase
-            .from('messages')
-            .update({ reactions: newReactions })
-            .eq('id', messageId)
-
-        if (error) console.error("Reaction update failed", error)
-    }
-
-    return { messages, isLoading, setMessages, deleteMessage, toggleReaction }
+return { messages, isLoading, setMessages, deleteMessage, toggleReaction, addMessage }
 }
