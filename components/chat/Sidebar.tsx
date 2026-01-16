@@ -31,18 +31,58 @@ export function Sidebar() {
     useEffect(() => {
         if (!currentUser) return
 
-        // Subscribe to Friend Requests
-        const channel = supabase
-            .channel('friend_requests_changes')
+        // 1. Friend Requests Listener
+        const requestsChannel = supabase
+            .channel('sidebar_requests')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests' }, () => {
                 fetchInitialData(currentUser.id)
             })
             .subscribe()
 
+        // 2. Messages Listener (Global for now, to update badges)
+        const messagesChannel = supabase
+            .channel('sidebar_messages')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                const newMsg = payload.new as any
+                if (newMsg.user_id !== currentUser.id) {
+                    setFriends(prev => prev.map(f => {
+                        // Re-calc ID to match
+                        const chatId = currentUser.id < f.id
+                            ? `dm_${currentUser.id}_${f.id}`
+                            : `dm_${f.id}_${currentUser.id}`
+
+                        if (newMsg.channel_id === chatId) {
+                            return { ...f, unread: (f.unread || 0) + 1 }
+                        }
+                        return f
+                    }))
+                }
+            })
+            .subscribe()
+
+        // 3. Read Status Listener (When I read a chat)
+        const readChannel = supabase
+            .channel('sidebar_reads')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'user_last_read',
+                filter: `user_id=eq.${currentUser.id}`
+            }, (payload) => {
+                // If I updated my read status, refresh stats or just clear that channel locally
+                // Ideally we just re-fetch stats to be safe
+                fetchUnreadStats(currentUser.id, friends)
+            })
+            .subscribe()
+
         fetchInitialData(currentUser.id)
 
-        return () => { supabase.removeChannel(channel) }
-    }, [currentUser])
+        return () => {
+            supabase.removeChannel(requestsChannel)
+            supabase.removeChannel(messagesChannel)
+            supabase.removeChannel(readChannel)
+        }
+    }, [currentUser, friends]) // Re-run if friends list changes (to keep refs fresh for listeners)
 
     // Search Effect
     useEffect(() => {
