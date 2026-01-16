@@ -110,16 +110,29 @@ export function Sidebar() {
                 setFriends([])
             }
 
-            // [NEW] 3. Fetch Groups I am in
-            const { data: myGroups } = await supabase
-                .from('channels')
-                .select('*')
-                .eq('type', 'group')
-            // .containedBy('id', user_in_members???) 
-            // Wait, policy allows us to SELECT if we are in members. So simple select works!
-            // But specifically we want `type='group'`.
+            // [NEW] 3. Fetch Groups I am in (Active & Pending)
+            const { data: myMemberships } = await supabase
+                .from('channel_members')
+                .select(`
+                    channel_id, 
+                    status, 
+                    role, 
+                    channels:channel_id (*) 
+                `)
+                .eq('user_id', userId)
 
-            setGroups(myGroups || [])
+            if (myMemberships) {
+                const formattedGroups = myMemberships.map((m: any) => {
+                    if (!m.channels) return null;
+                    return {
+                        ...m.channels,
+                        status: m.status,
+                        role: m.role
+                    }
+                }).filter(Boolean)
+
+                setGroups(formattedGroups)
+            }
 
         } catch (e) {
             console.error("View miss?", e)
@@ -252,16 +265,16 @@ export function Sidebar() {
                             {/* GROUPS List */}
                             <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 flex items-center justify-between">
                                 <span>Groups</span>
-                                <span className="bg-zinc-800 text-zinc-400 px-1.5 rounded text-[9px]">{groups.length}</span>
+                                <span className="bg-zinc-800 text-zinc-400 px-1.5 rounded text-[9px]">{groups.filter(g => g.status === 'active').length}</span>
                             </div>
-                            {groups.length === 0 ? (
+                            {groups.filter(g => g.status === 'active').length === 0 ? (
                                 <div className="px-3 py-4 text-xs text-zinc-600 italic text-center border border-dashed border-zinc-800 rounded-xl mb-4">
                                     No groups joined.<br />
                                     <button onClick={() => setShowGroupModal(true)} className="text-purple-400 hover:underline mt-1">Create one?</button>
                                 </div>
                             ) : (
                                 <div className="mb-4 space-y-1">
-                                    {groups.map(group => (
+                                    {groups.filter(g => g.status === 'active').map(group => (
                                         <div
                                             key={group.id}
                                             onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.image_url || '')}&type=group`)}
@@ -316,21 +329,59 @@ export function Sidebar() {
                     )}
 
                     {activeTab === 'requests' && (
-                        <div className="space-y-2">
-                            {incomingRequests.length === 0 && <div className="text-center p-8 text-zinc-600 text-sm">No new requests</div>}
-                            {incomingRequests.map(req => (
-                                <div key={req.id} className="bg-white/5 p-4 rounded-xl border border-white/5">
-                                    <div className="flex items-center gap-3 mb-3"><Avatar src={req.sender.avatar_url} fallback={req.sender.username} className="w-10 h-10" /><span className="font-bold text-sm text-white">{req.sender.username}</span></div>
-                                    <div className="flex gap-2">
-                                        <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-9" onClick={() => handleRequest(req.id, 'accepted')}><Check className="w-4 h-4 mr-2" /> Accept</Button>
-                                        <Button size="sm" variant="ghost" className="flex-1 h-9 hover:bg-white/10" onClick={() => handleRequest(req.id, 'rejected')}><X className="w-4 h-4 mr-2" /> Ignore</Button>
-                                    </div>
+                        <div className="space-y-4">
+                            {/* Group Invites Section */}
+                            {groups.filter(g => g.status === 'pending').length > 0 && (
+                                <div className="space-y-2">
+                                    <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Group Invites</div>
+                                    {groups.filter(g => g.status === 'pending').map(group => (
+                                        <div key={group.id} className="bg-white/5 p-4 rounded-xl border border-purple-500/30">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="w-10 h-10 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                                    <Users className="w-5 h-5 text-purple-400" />
+                                                </div>
+                                                <div>
+                                                    <span className="font-bold text-sm text-white block">{group.name}</span>
+                                                    <span className="text-xs text-zinc-400">Invited you to join</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-8" onClick={async () => {
+                                                    await supabase.rpc('respond_to_group_invite', { p_channel_id: group.id, accept: true })
+                                                    fetchInitialData(currentUser?.id)
+                                                }}>
+                                                    <Check className="w-4 h-4 mr-2" /> Join
+                                                </Button>
+                                                <Button size="sm" variant="ghost" className="flex-1 h-8 hover:bg-white/10" onClick={async () => {
+                                                    await supabase.rpc('respond_to_group_invite', { p_channel_id: group.id, accept: false })
+                                                    fetchInitialData(currentUser?.id)
+                                                }}>
+                                                    <X className="w-4 h-4 mr-2" /> Decline
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+                            )}
+
+                            {/* Friend Requests Section */}
+                            <div className="space-y-2">
+                                {incomingRequests.length > 0 && <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Friend Requests</div>}
+                                {incomingRequests.length === 0 && groups.filter(g => g.status === 'pending').length === 0 && <div className="text-center p-8 text-zinc-600 text-sm">No new requests</div>}
+
+                                {incomingRequests.map(req => (
+                                    <div key={req.id} className="bg-white/5 p-4 rounded-xl border border-white/5">
+                                        <div className="flex items-center gap-3 mb-3"><Avatar src={req.sender.avatar_url} fallback={req.sender.username} className="w-10 h-10" /><span className="font-bold text-sm text-white">{req.sender.username}</span></div>
+                                        <div className="flex gap-2">
+                                            <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-9" onClick={() => handleRequest(req.id, 'accepted')}><Check className="w-4 h-4 mr-2" /> Accept</Button>
+                                            <Button size="sm" variant="ghost" className="flex-1 h-9 hover:bg-white/10" onClick={() => handleRequest(req.id, 'rejected')}><X className="w-4 h-4 mr-2" /> Ignore</Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                     )}
 
-                </ScrollArea>
+                        </ScrollArea>
             </div>
 
             {showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} />}
