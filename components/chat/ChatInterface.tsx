@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { MessageBubble } from '@/components/chat/MessageBubble'
@@ -22,6 +22,16 @@ export default function ChatInterface() {
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [summary, setSummary] = useState<string | null>(null)
     const [isSummarizing, setIsSummarizing] = useState(false)
+
+    // Auto-scroll to bottom
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+
+    useEffect(() => {
+        scrollToBottom()
+    }, [messages, isLoading])
 
     const handleSummarize = async () => {
         setIsSummarizing(true)
@@ -105,10 +115,6 @@ export default function ChatInterface() {
                 </div>
             )}
 
-
-
-
-
             {/* Chat Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-secondary/20">
                 <div className="flex items-center gap-3">
@@ -168,6 +174,8 @@ export default function ChatInterface() {
                                 No messages yet. Be the first!
                             </div>
                         )}
+                        {/* Invisible element to scroll to */}
+                        <div ref={messagesEndRef} />
                     </div>
                 )}
             </div>

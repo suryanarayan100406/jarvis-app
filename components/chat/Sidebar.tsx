@@ -187,7 +187,7 @@ export function Sidebar() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-zinc-950/50">
+        <div className="flex flex-col h-full bg-zinc-950 border-r border-white/5">
             {/* Header */}
             <div className="p-3 bg-zinc-900/80 border-b border-white/5 flex items-center justify-between shrink-0 h-16">
                 <div
