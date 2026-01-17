@@ -27,6 +27,8 @@
 
   --animate-reaction: reaction-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-tilt: tilt 10s infinite linear;
 
   @keyframes reaction-pop {
     0% {
@@ -43,66 +45,104 @@
   }
 
   @keyframes float {
-    0% {
-      transform: translateY(0px);
+
+    0%,
+    100% {
+      transform: translateY(0px) rotateX(0deg);
     }
 
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-10px) rotateX(2deg);
+    }
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
     }
 
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+    }
+  }
+
+  @keyframes tilt {
+
+    0%,
+    50%,
     100% {
-      transform: translateY(0px);
+      transform: rotate(0deg);
+    }
+
+    25% {
+      transform: rotate(0.5deg);
+    }
+
+    75% {
+      transform: rotate(-0.5deg);
     }
   }
 }
 
 :root {
-  /* Gen Z / Cyberpunk-ish Vibe - Light Mode */
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 262 83% 58%;
+  /* Holographic / Cyberpunk Vibe */
+  --background: 260 60% 5%;
+  /* Darker, deeper base */
+  --foreground: 210 40% 98%;
+
+  --card: 260 50% 8%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 260 50% 8%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 265 89% 66%;
+  /* Electric Purple */
   --primary-foreground: 210 40% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 262 83% 96%;
-  --accent-foreground: 240 5.9% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 262 83% 58%;
+
+  --secondary: 260 30% 15%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 260 30% 15%;
+  --muted-foreground: 260 20% 65%;
+
+  --accent: 260 30% 15%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 260 30% 20%;
+  --input: 260 30% 20%;
+  --ring: 265 89% 66%;
+
   --radius: 1rem;
 }
 
 .dark {
-  /* Deep Space Black / Neon Accents */
-  --background: 260 50% 5%;
-  /* Deep Purple-Black */
-  --foreground: 0 0% 98%;
-  --card: 260 50% 8%;
-  --card-foreground: 0 0% 98%;
-  --popover: 260 50% 8%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 263 70% 50%;
+  --background: 260 60% 4%;
+  --foreground: 210 40% 98%;
+  --card: 260 50% 6%;
+  --card-foreground: 210 40% 98%;
+  --popover: 260 50% 6%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 265 89% 66%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 260 30% 15%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 260 30% 15%;
+  --secondary: 260 30% 12%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 260 30% 12%;
   --muted-foreground: 260 20% 65%;
-  --accent: 260 30% 15%;
-  --accent-foreground: 0 0% 98%;
+  --accent: 260 30% 12%;
+  --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 260 30% 20%;
-  --input: 260 30% 20%;
-  --ring: 263 70% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 260 30% 15%;
+  --input: 260 30% 15%;
+  --ring: 265 89% 66%;
 }
 
 @layer base {
@@ -112,44 +152,50 @@
 
   body {
     @apply bg-zinc-950 text-foreground overflow-hidden selection:bg-purple-500/30;
-    /* Mesh Gradient Background */
+    /* Enhanced Mesh Gradient */
     background-image:
-      radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
-      radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
-    perspective: 1200px;
-    /* Enable 3D space */
+      radial-gradient(circle at 15% 50%, hsla(265, 89%, 20%, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 85% 30%, hsla(190, 80%, 20%, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 50% 0%, hsla(320, 80%, 20%, 0.3) 0%, transparent 50%);
+    perspective: 1500px;
+    /* Deeper perspective */
   }
 }
 
 /* 3D / Glass Utilities */
 @layer components {
   .glass-panel {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    @apply bg-black/40 backdrop-blur-2xl border border-white/10;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      inset 0 0 20px rgba(255, 255, 255, 0.05);
+    /* Inner Glow */
   }
 
-  .glass-card-hover {
-    @apply transition-all duration-300 hover:transform hover:-translate-y-1;
-  }
-
-  .glass-card-hover:hover {
-    box-shadow: 0 10px 40px -10px rgba(124, 58, 237, 0.5);
+  /* Specific panel styling for stronger pop */
+  .glass-panel-strong {
+    @apply bg-zinc-900/60 backdrop-blur-2xl border border-white/10;
+    box-shadow:
+      0 20px 50px -12px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.1);
   }
 
   .text-shadow-glow {
-    text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
   }
 
-  /* 3D Rail Effect */
-  .rail-3d {
+  /* 3D Transform Utilities */
+  .preserve-3d {
     transform-style: preserve-3d;
-    transform: rotateY(5deg) scale(0.95);
-    transition: transform 0.3s ease;
   }
 
-  .rail-3d:hover {
-    transform: rotateY(0deg) scale(1);
+  .perspective-container {
+    perspective: 1500px;
+  }
+
+  .rotate-x-12 {
+    transform: rotateX(12deg);
   }
 }
 

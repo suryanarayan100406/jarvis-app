@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { ScrollArea } from '@/components/ui/ScrollArea'
 import { Avatar } from '@/components/ui/Avatar'
 import { supabase } from '@/lib/supabase'
@@ -189,48 +190,74 @@ export function Sidebar() {
 
                 <div className="h-px w-8 bg-white/5" />
 
-                {/* DMs Tab */}
-                <button
-                    onClick={() => setActiveTab('dms')}
-                    className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'dms' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
-                    title="Direct Messages"
-                >
-                    <MessageSquare className="w-5 h-5" />
-                    {activeTab === 'dms' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
-                </button>
-
-                {/* Groups Tab */}
-                <button
-                    onClick={() => setActiveTab('groups')}
-                    className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'groups' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
-                    title="Groups"
-                >
-                    <Users className="w-5 h-5" />
-                    {activeTab === 'groups' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
-                </button>
-
-                {/* Search Tab */}
-                <button
-                    onClick={() => setActiveTab('search')}
-                    className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'search' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
-                    title="Find People"
-                >
-                    <Search className="w-5 h-5" />
-                    {activeTab === 'search' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
-                </button>
-
-                {/* Requests Tab */}
-                <div className="relative">
+                <LayoutGroup>
+                    {/* DMs Tab */}
                     <button
-                        onClick={() => setActiveTab('requests')}
-                        className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'requests' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
-                        title="Requests"
+                        onClick={() => setActiveTab('dms')}
+                        className={cn("p-3 rounded-xl transition-all duration-300 relative group z-10")}
+                        title="Direct Messages"
                     >
-                        <Bell className="w-5 h-5" />
-                        {activeTab === 'requests' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
+                        <MessageSquare className={cn("w-5 h-5 relative z-20 transition-colors", activeTab === 'dms' ? "text-white" : "text-zinc-400 group-hover:text-white")} />
+                        {activeTab === 'dms' && (
+                            <motion.div
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_20px_-5px_rgba(124,58,237,0.5)] z-10"
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                        )}
                     </button>
-                    {incomingRequests.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-zinc-950 animate-bounce shadow-[0_0_8px_rgba(239,68,68,0.5)]" />}
-                </div>
+
+                    {/* Groups Tab */}
+                    <button
+                        onClick={() => setActiveTab('groups')}
+                        className={cn("p-3 rounded-xl transition-all duration-300 relative group z-10")}
+                        title="Groups"
+                    >
+                        <Users className={cn("w-5 h-5 relative z-20 transition-colors", activeTab === 'groups' ? "text-white" : "text-zinc-400 group-hover:text-white")} />
+                        {activeTab === 'groups' && (
+                            <motion.div
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_20px_-5px_rgba(124,58,237,0.5)] z-10"
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                        )}
+                    </button>
+
+                    {/* Search Tab */}
+                    <button
+                        onClick={() => setActiveTab('search')}
+                        className={cn("p-3 rounded-xl transition-all duration-300 relative group z-10")}
+                        title="Find People"
+                    >
+                        <Search className={cn("w-5 h-5 relative z-20 transition-colors", activeTab === 'search' ? "text-white" : "text-zinc-400 group-hover:text-white")} />
+                        {activeTab === 'search' && (
+                            <motion.div
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_20px_-5px_rgba(124,58,237,0.5)] z-10"
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                        )}
+                    </button>
+
+                    {/* Requests Tab */}
+                    <div className="relative z-10">
+                        <button
+                            onClick={() => setActiveTab('requests')}
+                            className={cn("p-3 rounded-xl transition-all duration-300 relative group")}
+                            title="Requests"
+                        >
+                            <Bell className={cn("w-5 h-5 relative z-20 transition-colors", activeTab === 'requests' ? "text-white" : "text-zinc-400 group-hover:text-white")} />
+                            {activeTab === 'requests' && (
+                                <motion.div
+                                    layoutId="activeTab"
+                                    className="absolute inset-0 bg-primary rounded-xl shadow-[0_0_20px_-5px_rgba(124,58,237,0.5)] z-10"
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                            )}
+                        </button>
+                        {incomingRequests.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-zinc-950 animate-bounce shadow-[0_0_8px_rgba(239,68,68,0.5)] z-30" />}
+                    </div>
+                </LayoutGroup>
 
                 <div className="flex-1" />
 
