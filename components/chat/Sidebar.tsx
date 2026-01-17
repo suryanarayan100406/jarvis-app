@@ -15,7 +15,7 @@ import { CreateGroupModal } from '@/components/chat/CreateGroupModal'
 
 export function Sidebar() {
     const router = useRouter()
-    const [activeTab, setActiveTab] = useState<'friends' | 'search' | 'requests'>('friends')
+    const [activeTab, setActiveTab] = useState<'dms' | 'groups' | 'search' | 'requests'>('dms')
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [showProfileModal, setShowProfileModal] = useState(false)
     const [showGroupModal, setShowGroupModal] = useState(false)
@@ -189,13 +189,25 @@ export function Sidebar() {
 
                 <div className="h-px w-8 bg-white/10" />
 
+                {/* DMs Tab */}
                 <button
-                    onClick={() => setActiveTab('friends')}
-                    className={cn("p-3 rounded-xl transition-all", activeTab === 'friends' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
-                    title="Chats"
+                    onClick={() => setActiveTab('dms')}
+                    className={cn("p-3 rounded-xl transition-all", activeTab === 'dms' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
+                    title="Direct Messages"
+                >
+                    <SortAsc className="w-6 h-6 rotate-180" /> {/* Simulating a chat bubbles icon or similar */}
+                </button>
+
+                {/* Groups Tab */}
+                <button
+                    onClick={() => setActiveTab('groups')}
+                    className={cn("p-3 rounded-xl transition-all", activeTab === 'groups' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
+                    title="Groups"
                 >
                     <Users className="w-6 h-6" />
                 </button>
+
+                {/* Search Tab */}
                 <button
                     onClick={() => setActiveTab('search')}
                     className={cn("p-3 rounded-xl transition-all", activeTab === 'search' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
@@ -203,6 +215,8 @@ export function Sidebar() {
                 >
                     <Search className="w-6 h-6" />
                 </button>
+
+                {/* Requests Tab */}
                 <div className="relative">
                     <button
                         onClick={() => setActiveTab('requests')}
@@ -226,11 +240,12 @@ export function Sidebar() {
                 {/* Header (Contextual) */}
                 <div className="h-16 border-b border-white/5 flex items-center justify-between px-4 shrink-0">
                     <h2 className="font-bold text-lg text-white">
-                        {activeTab === 'friends' && 'Chats'}
+                        {activeTab === 'dms' && 'Messages'}
+                        {activeTab === 'groups' && 'Groups'}
                         {activeTab === 'search' && 'Find'}
                         {activeTab === 'requests' && 'Requests'}
                     </h2>
-                    {activeTab === 'friends' && (
+                    {activeTab === 'groups' && (
                         <Button
                             size="sm"
                             variant="ghost"
@@ -247,11 +262,10 @@ export function Sidebar() {
                 <ScrollArea className="flex-1 p-3">
                     {/* LIST CONTENT */}
 
-                    {/* ... (Existing List Logic adapted below) ... */}
-
-                    {activeTab === 'friends' && (
+                    {/* DMs Tab Content */}
+                    {activeTab === 'dms' && (
                         <div className="space-y-1">
-                            {/* Global Chat Item */}
+                            {/* Global Chat Item (Pinned) */}
                             <div onClick={() => router.push('/chat?chatId=global&name=Global Chat')} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors mb-4 bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
                                     <span className="text-xs font-bold text-white">GC</span>
@@ -262,11 +276,37 @@ export function Sidebar() {
                                 </div>
                             </div>
 
-                            {/* GROUPS List */}
+                            <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Direct Messages</div>
+                            {friends.length === 0 ? (
+                                <div className="text-center p-8 text-zinc-600 text-sm">No friends yet.</div>
+                            ) : (
+                                friends.map(friend => {
+                                    const chatId = currentUser.id < friend.id ? `dm_${currentUser.id}_${friend.id}` : `dm_${friend.id}_${currentUser.id}`
+                                    return (
+                                        <div key={friend.id} onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}&avatar=${encodeURIComponent(friend.avatar_url)}`)} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
+                                            <div className="relative">
+                                                <Avatar src={friend.avatar_url} fallback={friend.username} className="w-10 h-10" />
+                                                {friend.unread > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white border-2 border-zinc-950">{friend.unread}</span>}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-semibold text-sm text-zinc-200 block">{friend.username}</span>
+                                                <span className="text-xs text-muted-foreground truncate">{friend.bio || "Available"}</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
+                        </div>
+                    )}
+
+                    {/* Groups Tab Content */}
+                    {activeTab === 'groups' && (
+                        <div className="space-y-1">
                             <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-                                <span>Groups</span>
+                                <span>My Groups</span>
                                 <span className="bg-zinc-800 text-zinc-400 px-1.5 rounded text-[9px]">{groups.filter(g => g.status === 'active').length}</span>
                             </div>
+
                             {groups.filter(g => g.status === 'active').length === 0 ? (
                                 <div className="px-3 py-4 text-xs text-zinc-600 italic text-center border border-dashed border-zinc-800 rounded-xl mb-4">
                                     No groups joined.<br />
@@ -288,27 +328,6 @@ export function Sidebar() {
                                         </div>
                                     ))}
                                 </div>
-                            )}
-
-                            <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Direct Messages</div>
-                            {friends.length === 0 ? (
-                                <div className="text-center p-8 text-zinc-600 text-sm">No friends yet.</div>
-                            ) : (
-                                friends.map(friend => {
-                                    const chatId = currentUser.id < friend.id ? `dm_${currentUser.id}_${friend.id}` : `dm_${friend.id}_${currentUser.id}`
-                                    return (
-                                        <div key={friend.id} onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}&avatar=${encodeURIComponent(friend.avatar_url)}`)} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
-                                            <div className="relative">
-                                                <Avatar src={friend.avatar_url} fallback={friend.username} className="w-10 h-10" />
-                                                {friend.unread > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white border-2 border-zinc-950">{friend.unread}</span>}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <span className="font-semibold text-sm text-zinc-200 block">{friend.username}</span>
-                                                <span className="text-xs text-muted-foreground truncate">{friend.bio || "Available"}</span>
-                                            </div>
-                                        </div>
-                                    )
-                                })
                             )}
                         </div>
                     )}
