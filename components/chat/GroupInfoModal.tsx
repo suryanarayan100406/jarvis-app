@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Users, LogOut, Shield, Crown, Copy, Trash2, Edit2, Check, X, Camera, Loader2, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { DEFAULT_GROUP_AVATAR } from '@/lib/constants'
 
 interface GroupInfoModalProps {
     channelId: string
@@ -255,56 +256,93 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                         className="flex flex-col h-[600px]"
                     >
                         {/* Header Image Area */}
-                        <div className="h-32 bg-gradient-to-r from-purple-900 to-indigo-900 relative">
-                            <div className="absolute -bottom-10 left-6 group">
-                                <Avatar className="w-20 h-20 border-4 border-zinc-900 shadow-xl" src={channel.image_url} fallback={channel.name[0]} />
-                                {isAdmin && (
-                                    <>
-                                        <button
-                                            onClick={() => fileInputRef.current?.click()}
-                                            disabled={uploadingImage}
-                                            className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                                        >
-                                            {uploadingImage ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Camera className="w-6 h-6 text-white" />}
-                                        </button>
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            className="hidden"
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                        />
-                                    </>
-                                )}
-                            </div>
-                        </div>
+                        <div className="h-40 relative group/header overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-indigo-900 to-black animate-gradient-xy" />
 
-                        <div className="mt-12 px-6">
-                            {/* Group Name & Desc */}
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    {isEditing ? (
-                                        <div className="space-y-2 mb-2">
-                                            <Input value={editName} onChange={e => setEditName(e.target.value)} className="bg-black/20" placeholder="Group Name" />
-                                            <Input value={editDesc} onChange={e => setEditDesc(e.target.value)} className="bg-black/20" placeholder="Description" />
-                                        </div>
-                                    ) : (
+                            {/* Decorative Grid */}
+                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+                            <div className="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(to_bottom,transparent,black)]" />
+
+                            <div className="absolute -bottom-12 left-6">
+                                <div className="relative group/avatar">
+                                    <Avatar className="w-24 h-24 border-4 border-zinc-900 shadow-2xl ring-2 ring-purple-500/20" src={channel.image_url || DEFAULT_GROUP_AVATAR} fallback={channel.name[0]} />
+
+                                    {isAdmin && (
                                         <>
-                                            <h2 className="text-xl font-bold">{channel.name}</h2>
-                                            <p className="text-sm text-zinc-400">{channel.description || "No description"}</p>
+                                            <button
+                                                onClick={() => fileInputRef.current?.click()}
+                                                disabled={uploadingImage}
+                                                className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 backdrop-blur-sm cursor-pointer"
+                                            >
+                                                {uploadingImage ? (
+                                                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <Camera className="w-6 h-6 text-white mb-1" />
+                                                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Change</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                            />
                                         </>
                                     )}
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-16 px-6 pb-6 space-y-6">
+                            {/* Group Name & Desc */}
+                            <div className="flex justify-between items-start group/info">
+                                <div className="flex-1 space-y-1">
+                                    {isEditing ? (
+                                        <div className="space-y-3 bg-white/5 p-4 rounded-xl border border-white/10 animate-in fade-in zoom-in-95 duration-200">
+                                            <div>
+                                                <label className="text-xs font-bold text-zinc-500 uppercase ml-1 mb-1.5 block">Group Name</label>
+                                                <Input
+                                                    value={editName}
+                                                    onChange={e => setEditName(e.target.value)}
+                                                    className="bg-black/40 border-white/10 text-lg font-bold"
+                                                    placeholder="Group Name"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-bold text-zinc-500 uppercase ml-1 mb-1.5 block">Description</label>
+                                                <Input
+                                                    value={editDesc}
+                                                    onChange={e => setEditDesc(e.target.value)}
+                                                    className="bg-black/40 border-white/10"
+                                                    placeholder="What's this group about?"
+                                                />
+                                            </div>
+                                            <div className="flex justify-end gap-2 pt-2">
+                                                <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>Cancel</Button>
+                                                <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleUpdateGroup}>Save Changes</Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="relative pr-8">
+                                            <h2 className="text-2xl font-bold text-white tracking-tight">{channel.name}</h2>
+                                            <p className="text-sm text-zinc-400 mt-1 leading-relaxed">{channel.description || "No description provided."}</p>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {isAdmin && !isEditing && (
-                                    <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
-                                        <Edit2 className="w-4 h-4 text-zinc-400" />
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setIsEditing(true)}
+                                        className="opacity-0 group-hover/info:opacity-100 transition-opacity ml-2 shrink-0 text-zinc-400 hover:text-white hover:bg-white/10"
+                                    >
+                                        <Edit2 className="w-4 h-4" />
                                     </Button>
-                                )}
-                                {isAdmin && isEditing && (
-                                    <div className="flex gap-1">
-                                        <Button size="icon" className="bg-green-600 hover:bg-green-700 w-8 h-8" onClick={handleUpdateGroup}><Check className="w-4 h-4" /></Button>
-                                        <Button size="icon" variant="ghost" className="w-8 h-8" onClick={() => setIsEditing(false)}><X className="w-4 h-4" /></Button>
-                                    </div>
                                 )}
                             </div>
 
