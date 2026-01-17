@@ -142,8 +142,10 @@ export default function ChatInterface() {
 
             {/* Chat Header */}
             <div className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-white/5 rounded-t-3xl backdrop-blur-md">
-                <div
-                    className={`flex items-center gap-4 ${chatType === 'group' ? 'cursor-pointer hover:opacity-80 transition-all hover:translate-x-1' : ''}`}
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex items-center gap-4 ${chatType === 'group' ? 'cursor-pointer' : ''}`}
                     onClick={() => {
                         if (chatType === 'group') {
                             setShowGroupInfo(true)
@@ -161,95 +163,97 @@ export default function ChatInterface() {
                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" /> Live
                         </p>
                     </div>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        onClick={handleSummarize}
-                        disabled={isSummarizing}
-                        variant="ghost"
-                        size="sm"
-                        className="text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 rounded-xl"
-                    >
-                        {isSummarizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                        {isSummarizing ? 'Cooking...' : 'Summarize'}
-                    </Button>
-                </div>
             </div>
+            <div className="flex gap-2">
+                <Button
+                    onClick={handleSummarize}
+                    disabled={isSummarizing}
+                    variant="ghost"
+                    size="sm"
+                    className="text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 rounded-xl"
+                >
+                    {isSummarizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                    {isSummarizing ? 'Cooking...' : 'Summarize'}
+                </Button>
+            </div>
+        </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                {isLoading ? (
-                    <div className="flex justify-center items-center h-full text-muted-foreground">
-                        <Loader2 className="animate-spin w-8 h-8" />
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {messages.map((msg) => {
-                            // Check ownership accurately
-                            const isOwn = currentUser && msg.user_id === currentUser.id
-                            return (
-                                <MessageBubble
-                                    key={msg.id}
-                                    id={msg.id}
-                                    isOwn={isOwn || false}
-                                    content={msg.content}
-                                    timestamp={new Date(msg.inserted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    senderName={msg.sender_name}
-                                    onDelete={deleteMessage}
-                                    // Reaction Props
-                                    reactions={msg.reactions}
-                                    currentUserId={currentUser?.id}
-                                    onReact={(id, emoji) => toggleReaction(id, currentUser?.id, emoji)}
-                                />
-                            )
-                        })}
-                        {messages.length === 0 && (
-                            <div className="text-center text-zinc-500 mt-20 text-lg font-light tracking-wide">
-                                Quiet in here... <span className="text-2xl">🤫</span>
-                            </div>
-                        )}
-                        {/* Invisible element to scroll to */}
-                        <div ref={messagesEndRef} />
+            {/* Messages Area */ }
+    <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        {isLoading ? (
+            <div className="flex justify-center items-center h-full text-muted-foreground">
+                <Loader2 className="animate-spin w-8 h-8" />
+            </div>
+        ) : (
+            <div className="space-y-6">
+                {messages.map((msg) => {
+                    // Check ownership accurately
+                    const isOwn = currentUser && msg.user_id === currentUser.id
+                    return (
+                        <MessageBubble
+                            key={msg.id}
+                            id={msg.id}
+                            isOwn={isOwn || false}
+                            content={msg.content}
+                            timestamp={new Date(msg.inserted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            senderName={msg.sender_name}
+                            onDelete={deleteMessage}
+                            // Reaction Props
+                            reactions={msg.reactions}
+                            currentUserId={currentUser?.id}
+                            onReact={(id, emoji) => toggleReaction(id, currentUser?.id, emoji)}
+                        />
+                    )
+                })}
+                {messages.length === 0 && (
+                    <div className="text-center text-zinc-500 mt-20 text-lg font-light tracking-wide">
+                        Quiet in here... <span className="text-2xl">🤫</span>
                     </div>
                 )}
+                {/* Invisible element to scroll to */}
+                <div ref={messagesEndRef} />
             </div>
+        )}
+    </div>
 
-            {/* Input Area */}
-            <div className="p-6 bg-transparent">
-                <form onSubmit={handleSendMessage} className="flex items-center gap-3 max-w-5xl mx-auto bg-black/40 p-2 pl-4 rounded-3xl border border-white/5 focus-within:border-purple-500/50 focus-within:shadow-[0_0_30px_-5px_rgba(147,51,234,0.3)] transition-all">
-                    <Button type="button" size="icon" variant="ghost" className="text-zinc-400 hover:text-white shrink-0">
-                        <Paperclip className="w-5 h-5" />
-                    </Button>
+    {/* Input Area */ }
+    <div className="p-6 bg-transparent">
+        <form onSubmit={handleSendMessage} className="flex items-center gap-3 max-w-5xl mx-auto bg-black/40 p-2 pl-4 rounded-3xl border border-white/5 focus-within:border-purple-500/50 focus-within:shadow-[0_0_30px_-5px_rgba(147,51,234,0.3)] transition-all">
+            <Button type="button" size="icon" variant="ghost" className="text-zinc-400 hover:text-white shrink-0">
+                <Paperclip className="w-5 h-5" />
+            </Button>
 
-                    <div className="flex-1 relative">
-                        <Input
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            placeholder="Type a message..."
-                            className="bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-zinc-500 h-12 text-base"
-                        />
-                    </div>
-
-                    {inputValue ? (
-                        <Button type="submit" size="icon" className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shrink-0 mr-1 transition-transform active:scale-95">
-                            <Send className="w-4 h-4 ml-0.5" />
-                        </Button>
-                    ) : (
-                        <Button type="button" size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 shrink-0 mr-1">
-                            <Mic className="w-4 h-4 text-zinc-400" />
-                        </Button>
-                    )}
-                </form>
-            </div>
-
-            {/* Modals */}
-            {showGroupInfo && (
-                <GroupInfoModal
-                    channelId={channelId}
-                    onClose={() => setShowGroupInfo(false)}
-                    currentUser={currentUser}
+            <div className="flex-1 relative">
+                <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Type a message..."
+                    className="bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-zinc-500 h-12 text-base"
                 />
+            </div>
+
+            {inputValue ? (
+                <Button type="submit" size="icon" className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shrink-0 mr-1 transition-transform active:scale-95">
+                    <Send className="w-4 h-4 ml-0.5" />
+                </Button>
+            ) : (
+                <Button type="button" size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 shrink-0 mr-1">
+                    <Mic className="w-4 h-4 text-zinc-400" />
+                </Button>
             )}
-        </div>
+        </form>
+    </div>
+
+    {/* Modals */ }
+    {
+        showGroupInfo && (
+            <GroupInfoModal
+                channelId={channelId}
+                onClose={() => setShowGroupInfo(false)}
+                currentUser={currentUser}
+            />
+        )
+    }
+        </div >
     )
 }

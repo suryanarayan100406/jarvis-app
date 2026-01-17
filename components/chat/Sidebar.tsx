@@ -192,7 +192,9 @@ export function Sidebar() {
 
                 <LayoutGroup>
                     {/* DMs Tab */}
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.1, rotateY: 10 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => setActiveTab('dms')}
                         className={cn("p-3 rounded-xl transition-all duration-300 relative group z-10")}
                         title="Direct Messages"
@@ -205,10 +207,12 @@ export function Sidebar() {
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                         )}
-                    </button>
+                    </motion.button>
 
                     {/* Groups Tab */}
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.1, rotateY: 10 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => setActiveTab('groups')}
                         className={cn("p-3 rounded-xl transition-all duration-300 relative group z-10")}
                         title="Groups"
@@ -221,10 +225,12 @@ export function Sidebar() {
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                         )}
-                    </button>
+                    </motion.button>
 
                     {/* Search Tab */}
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.1, rotateY: 10 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => setActiveTab('search')}
                         className={cn("p-3 rounded-xl transition-all duration-300 relative group z-10")}
                         title="Find People"
@@ -237,11 +243,13 @@ export function Sidebar() {
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                         )}
-                    </button>
+                    </motion.button>
 
                     {/* Requests Tab */}
                     <div className="relative z-10">
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.1, rotateY: 10 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setActiveTab('requests')}
                             className={cn("p-3 rounded-xl transition-all duration-300 relative group")}
                             title="Requests"
@@ -254,16 +262,22 @@ export function Sidebar() {
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 />
                             )}
-                        </button>
+                        </motion.button>
                         {incomingRequests.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-zinc-950 animate-bounce shadow-[0_0_8px_rgba(239,68,68,0.5)] z-30" />}
                     </div>
                 </LayoutGroup>
 
                 <div className="flex-1" />
 
-                <button onClick={handleLogout} className="p-2.5 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all hover:scale-105" title="Logout">
+                <motion.button
+                    whileHover={{ scale: 1.1, rotate: 10 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleLogout}
+                    className="p-2.5 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                    title="Logout"
+                >
                     <LogOut className="w-5 h-5" />
-                </button>
+                </motion.button>
             </div>
             {/* RIGHT PANEL (Content) */}
             <div className="flex-1 flex flex-col min-w-0 glass-panel rounded-2xl m-3 ml-0 duration-500">
