@@ -172,6 +172,42 @@ export default function ChatInterface() {
         }
     }
 
+    // [NEW] Dynamic Header Info
+    const [headerInfo, setHeaderInfo] = useState({
+        name: chatName || 'Chat',
+        avatar: chatAvatar
+    })
+
+    useEffect(() => {
+        // Initial set
+        setHeaderInfo({
+            name: chatName || 'Chat',
+            avatar: chatAvatar
+        })
+
+        if (chatType === 'group' && channelId && channelId !== 'global') {
+            const channelSub = supabase
+                .channel(`header_update_${channelId}`)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'channels', filter: `id=eq.${channelId}` }, (payload: any) => {
+                    const newData = payload.new
+                    setHeaderInfo(prev => ({
+                        ...prev,
+                        name: newData.name,
+                        avatar: newData.image_url || DEFAULT_GROUP_AVATAR
+                    }))
+                })
+                .subscribe()
+
+            // Also fetch fresh ONCE
+            supabase.from('channels').select('name, image_url').eq('id', channelId).single()
+                .then(({ data }) => {
+                    if (data) setHeaderInfo(prev => ({ ...prev, name: data.name, avatar: data.image_url || DEFAULT_GROUP_AVATAR }))
+                })
+
+            return () => { supabase.removeChannel(channelSub) }
+        }
+    }, [channelId, chatType, chatName, chatAvatar])
+
     return (
         <div className="glass-panel mx-3 my-3 rounded-2xl flex flex-col h-[calc(100vh-1.5rem)] relative animate-in fade-in zoom-in duration-500 select-none border-l-0">
             {/* Summary Overlay */}
@@ -201,18 +237,20 @@ export default function ChatInterface() {
                         }
                     }}
                 >
-                    {chatAvatar ? (
-                        <Avatar src={chatAvatar} fallback={chatName} className="w-12 h-12 border-2 border-white/10 shadow-lg" />
-                    ) : (
+                    <div className="relative">
                         <Avatar
-                            src={chatName === 'Global Chat' ? GLOBAL_CHAT_AVATAR : (chatType === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR)}
-                            className={cn("w-12 h-12 border-2 border-white/10 shadow-lg", chatName === 'Global Chat' && "shadow-blue-500/20 border-blue-500/30")}
+                            src={headerInfo.name === 'Global Chat' ? GLOBAL_CHAT_AVATAR : (headerInfo.avatar || (chatType === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR))}
+                            className={cn("w-12 h-12 border-2 border-white/10 shadow-lg", headerInfo.name === 'Global Chat' && "shadow-blue-500/20 border-blue-500/30")}
                         />
-                    )}
+                        {chatType === 'dm' && <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>}
+                    </div>
                     <div>
-                        <h3 className="font-bold text-xl drop-shadow-sm">{chatName}</h3>
-                        <p className="text-xs text-green-400 font-medium tracking-wide flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" /> Live
+                        <h2 className="font-bold text-lg text-white tracking-tight flex items-center gap-2">
+                            {headerInfo.name}
+                            {chatType === 'group' && headerInfo.name !== 'Global Chat' && <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 border border-white/5">GROUP</span>}
+                        </h2>
+                        <p className="text-xs text-purple-300/80 font-medium tracking-wide">
+                            {chatType === 'dm' ? 'Online' : (headerInfo.name === 'Global Chat' ? 'Server Public' : 'Tap for info')}
                         </p>
                     </div>
                 </motion.div>
