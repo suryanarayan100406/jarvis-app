@@ -10,6 +10,7 @@ import { useChatMessages } from '@/hooks/useChatMessages'
 import { Avatar } from '@/components/ui/Avatar'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { GroupInfoModal } from '@/components/chat/GroupInfoModal'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function ChatInterface() {
     const searchParams = useSearchParams()

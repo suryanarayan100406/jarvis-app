@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
@@ -246,7 +247,13 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                 {isLoading ? (
                     <div className="p-8 text-center text-zinc-500">Loading...</div>
                 ) : (
-                    <div className="flex flex-col h-[600px]">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col h-[600px]"
+                    >
                         {/* Header Image Area */}
                         <div className="h-32 bg-gradient-to-r from-purple-900 to-indigo-900 relative">
                             <div className="absolute -bottom-10 left-6 group">
@@ -401,7 +408,7 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                                 <LogOut className="w-4 h-4 mr-2" /> Leave Group
                             </Button>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
             </DialogContent>
         </Dialog>
