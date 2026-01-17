@@ -10,6 +10,7 @@ import { MoreVertical, LogOut, Settings, Search, UserPlus, Users, Bell, Check, X
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { DEFAULT_USER_AVATAR, DEFAULT_GROUP_AVATAR } from '@/lib/constants'
 import { useRouter } from 'next/navigation'
 
 import { CreateGroupModal } from '@/components/chat/CreateGroupModal'
@@ -185,7 +186,7 @@ export function Sidebar() {
             <div className="w-[70px] h-full flex flex-col items-center py-4 gap-4 glass-panel rounded-2xl transition-all duration-500 hover:rotate-y-2 hover:scale-[1.02] hover:shadow-[0_0_40px_-5px_rgba(124,58,237,0.4)] z-50">
                 {/* Profile Icon */}
                 <div onClick={() => setShowProfileModal(true)} className="cursor-pointer hover:scale-105 transition-transform duration-300">
-                    <Avatar src={currentUser?.avatar_url} fallback={currentUser?.username?.slice(0, 2)} className="w-10 h-10 border border-white/20 shadow-lg" />
+                    <Avatar src={currentUser?.avatar_url || DEFAULT_USER_AVATAR} fallback={currentUser?.username?.slice(0, 2)} className="w-10 h-10 border border-white/20 shadow-lg" />
                 </div>
 
                 <div className="h-px w-8 bg-white/5" />
@@ -362,10 +363,10 @@ export function Sidebar() {
                                         <div
                                             key={group.id}
                                             style={{ animationDelay: `${i * 100}ms` }}
-                                            onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.image_url || '')}&type=group`)}
+                                            onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.image_url || DEFAULT_GROUP_AVATAR)}&type=group`)}
                                             className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-backwards"
                                         >
-                                            <Avatar src={group.image_url} fallback={group.name} className="w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors shadow-lg" />
+                                            <Avatar src={group.image_url || DEFAULT_GROUP_AVATAR} fallback={group.name[0]} className="w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors shadow-lg" />
                                             <div className="flex-1 min-w-0">
                                                 <span className="font-semibold text-base text-zinc-200 block group-hover:text-white truncate">{group.name}</span>
                                                 <span className="text-sm text-zinc-500 truncate group-hover:text-zinc-400">{group.description || 'Group Chat'}</span>
