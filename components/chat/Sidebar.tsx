@@ -238,207 +238,178 @@ export function Sidebar() {
                     <LogOut className="w-6 h-6" />
                 </button>
             </div>
-
-            {/* RIGHT PANEL (Content) - Using absolute positioning to be distinct from the rail in parent layout, but here we just style the list container */}
-            {/* NOTE: Sidebar component currently includes the list view. We need to style that too. */}
-            {/* Actually, looking at the code structure:
-                The Sidebar component returns:
-                <div className="flex ...">
-                   <Vertical Rail />
-                   <List Panel />
+            {/* RIGHT PANEL (Content) */}
+            <div className="flex-1 flex flex-col min-w-0 glass-panel rounded-3xl m-4 ml-0 animate-in fade-in slide-in-from-left-4 duration-500">
+                {/* Header (Contextual) */}
+                <div className="h-20 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-white/5 backdrop-blur-sm rounded-t-3xl">
+                    <h2 className="font-bold text-2xl text-white tracking-tight drop-shadow-md">
+                        {activeTab === 'dms' && 'Messages'}
+                        {activeTab === 'groups' && 'Groups'}
+                        {activeTab === 'search' && 'Find'}
+                        {activeTab === 'requests' && 'Requests'}
+                    </h2>
+                    {activeTab === 'groups' && (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setShowGroupModal(true)}
+                            className="h-10 w-10 p-0 rounded-full bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 transition-all hover:scale-110 hover:rotate-90"
+                            title="New Group"
+                        >
+                            <Users className="w-5 h-5" />
+                            <span className="sr-only">New Group</span>
+                        </Button>
+                    )}
                 </div>
-                I will style the List Panel to also be a glass panel, separate from the rail.
-            */}
+
+                <ScrollArea className="flex-1 p-4">
+                    {/* LIST CONTENT */}
+
+                    {/* DMs Tab Content */}
+                    {activeTab === 'dms' && (
+                        <div className="space-y-2">
+                            {/* Global Chat Item (Pinned) */}
+                            <div onClick={() => router.push('/chat?chatId=global&name=Global Chat')} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 cursor-pointer transition-all hover:scale-[1.02] mb-6 bg-gradient-to-r from-purple-500/20 to-transparent border border-purple-500/30 shadow-[0_4px_20px_-5px_rgba(147,51,234,0.3)] group">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
+                                    <span className="text-sm font-bold text-white">GC</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <span className="font-bold text-base text-white block">Global Chat</span>
+                                    <span className="text-xs text-purple-300 font-medium tracking-wide">Public Channel</span>
+                                </div>
+                            </div>
+
+                            <div className="px-2 py-2 text-xs font-bold text-zinc-500 uppercase tracking-widest">Direct Messages</div>
+                            {friends.length === 0 ? (
+                                <div className="text-center p-8 text-zinc-600 text-sm">No friends yet.</div>
+                            ) : (
+                                friends.map(friend => {
+                                    const chatId = currentUser.id < friend.id ? `dm_${currentUser.id}_${friend.id}` : `dm_${friend.id}_${currentUser.id}`
+                                    return (
+                                        <div key={friend.id} onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}&avatar=${encodeURIComponent(friend.avatar_url)}`)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group">
+                                            <div className="relative">
+                                                <Avatar src={friend.avatar_url} fallback={friend.username} className="w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors" />
+                                                {friend.unread > 0 && <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-zinc-950 shadow-lg animate-pulse">{friend.unread}</span>}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-semibold text-base text-zinc-200 block group-hover:text-white transition-colors">{friend.username}</span>
+                                                <span className="text-sm text-zinc-500 truncate group-hover:text-zinc-400 transition-colors">{friend.bio || "Available"}</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
+                        </div>
+                    )}
+
+                    {/* Groups Tab Content */}
+                    {activeTab === 'groups' && (
+                        <div className="space-y-2">
+                            <div className="px-2 py-2 text-xs font-bold text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+                                <span>My Groups</span>
+                                <span className="bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full text-[10px]">{groups.filter(g => g.status === 'active').length}</span>
+                            </div>
+
+                            {groups.filter(g => g.status === 'active').length === 0 ? (
+                                <div className="px-4 py-8 text-sm text-zinc-600 italic text-center border-2 border-dashed border-zinc-800 rounded-3xl mb-4 hover:border-zinc-700 transition-colors">
+                                    No groups joined.<br />
+                                    <button onClick={() => setShowGroupModal(true)} className="text-purple-400 hover:text-purple-300 font-bold mt-2 hover:underline">Create one?</button>
+                                </div>
+                            ) : (
+                                <div className="mb-4 space-y-2">
+                                    {groups.filter(g => g.status === 'active').map(group => (
+                                        <div
+                                            key={group.id}
+                                            onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.image_url || '')}&type=group`)}
+                                            className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group"
+                                        >
+                                            <Avatar src={group.image_url} fallback={group.name} className="w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors shadow-lg" />
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-semibold text-base text-zinc-200 block group-hover:text-white truncate">{group.name}</span>
+                                                <span className="text-sm text-zinc-500 truncate group-hover:text-zinc-400">{group.description || 'Group Chat'}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'search' && (
+                        <div className="space-y-6">
+                            <div className="px-1"><Input placeholder="Search people..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-black/40 border-white/10 rounded-xl h-12 text-lg focus:ring-purple-500/50" /></div>
+                            <div className="space-y-2">
+                                {searchResults.map(user => (
+                                    <div key={user.id} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
+                                        <Avatar src={user.avatar_url} fallback={user.username} className="w-12 h-12" />
+                                        <div className="flex-1 min-w-0"><span className="font-bold text-base text-zinc-200 block">{user.username}</span></div>
+                                        <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full text-purple-400 hover:bg-purple-500/20 hover:text-purple-300" onClick={() => sendRequest(user.id)}><UserPlus className="w-5 h-5" /></Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'requests' && (
+                        <div className="space-y-6">
+                            {/* Group Invites Section */}
+                            {groups.filter(g => g.status === 'pending').length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="px-2 py-1 text-xs font-bold text-zinc-500 uppercase tracking-widest">Group Invites</div>
+                                    {groups.filter(g => g.status === 'pending').map(group => (
+                                        <div key={group.id} className="bg-gradient-to-br from-purple-900/20 to-zinc-900/50 p-5 rounded-3xl border border-purple-500/30">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="w-12 h-12 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center shadow-lg">
+                                                    <Users className="w-6 h-6 text-purple-400" />
+                                                </div>
+                                                <div>
+                                                    <span className="font-bold text-base text-white block">{group.name}</span>
+                                                    <span className="text-sm text-zinc-400">Invited you to join</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-10 rounded-xl font-bold shadow-lg shadow-purple-900/20" onClick={async () => {
+                                                    await supabase.rpc('respond_to_group_invite', { p_channel_id: group.id, accept: true })
+                                                    fetchInitialData(currentUser?.id)
+                                                }}>
+                                                    <Check className="w-4 h-4 mr-2" /> Join
+                                                </Button>
+                                                <Button size="sm" variant="ghost" className="flex-1 h-10 rounded-xl hover:bg-white/10" onClick={async () => {
+                                                    await supabase.rpc('respond_to_group_invite', { p_channel_id: group.id, accept: false })
+                                                    fetchInitialData(currentUser?.id)
+                                                }}>
+                                                    <X className="w-4 h-4 mr-2" /> Decline
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Friend Requests Section */}
+                            <div className="space-y-3">
+                                {incomingRequests.length > 0 && <div className="px-2 py-1 text-xs font-bold text-zinc-500 uppercase tracking-widest">Friend Requests</div>}
+                                {incomingRequests.length === 0 && groups.filter(g => g.status === 'pending').length === 0 && <div className="text-center p-12 text-zinc-500 text-base italic">No new requests</div>}
+
+                                {incomingRequests.map(req => (
+                                    <div key={req.id} className="bg-zinc-900/40 p-5 rounded-3xl border border-white/5 hover:border-white/10 transition-colors">
+                                        <div className="flex items-center gap-4 mb-4"><Avatar src={req.sender.avatar_url} fallback={req.sender.username} className="w-12 h-12" /><span className="font-bold text-base text-white">{req.sender.username}</span></div>
+                                        <div className="flex gap-3">
+                                            <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-10 rounded-xl" onClick={() => handleRequest(req.id, 'accepted')}><Check className="w-4 h-4 mr-2" /> Accept</Button>
+                                            <Button size="sm" variant="ghost" className="flex-1 h-10 rounded-xl hover:bg-white/10" onClick={() => handleRequest(req.id, 'rejected')}><X className="w-4 h-4 mr-2" /> Ignore</Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                </ScrollArea>
+            </div>
+
+            {showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} />}
+            {showGroupModal && <CreateGroupModal onClose={() => setShowGroupModal(false)} currentUser={currentUser} onGroupCreated={() => fetchInitialData(currentUser?.id)} />}
+            <ProfileSetup onComplete={() => fetchSession()} />
         </div>
-    )
-}
-
-/* 
-   WAIT - The return statement above REPLACES the entire return block.
-   I need to be careful. The original code had:
-   return (
-      <div className="flex h-full ...">
-         <Wrapper for Rail> ... </Wrapper>
-         <Wrapper for Panel> ... </Wrapper>
-         ... Modals
-      </div>
-   )
-   
-   My previous replacement was only targeting the RAIL part, but I see I am replacing a huge chunk.
-   Let me re-read the file structure to ensure I don't delete the Right Panel logic.
-*/
-
-{/* RIGHT PANEL (Content) */ }
-<div className="flex-1 flex flex-col min-w-0 glass-panel rounded-3xl m-4 ml-0 animate-in fade-in slide-in-from-left-4 duration-500">
-    {/* Header (Contextual) */}
-    <div className="h-20 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-white/5 backdrop-blur-sm rounded-t-3xl">
-        <h2 className="font-bold text-2xl text-white tracking-tight drop-shadow-md">
-            {activeTab === 'dms' && 'Messages'}
-            {activeTab === 'groups' && 'Groups'}
-            {activeTab === 'search' && 'Find'}
-            {activeTab === 'requests' && 'Requests'}
-        </h2>
-        {activeTab === 'groups' && (
-            <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setShowGroupModal(true)}
-                className="h-10 w-10 p-0 rounded-full bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 transition-all hover:scale-110 hover:rotate-90"
-                title="New Group"
-            >
-                <Users className="w-5 h-5" />
-                <span className="sr-only">New Group</span>
-            </Button>
-        )}
-    </div>
-
-    <ScrollArea className="flex-1 p-4">
-        {/* LIST CONTENT */}
-
-        {/* DMs Tab Content */}
-        {activeTab === 'dms' && (
-            <div className="space-y-2">
-                {/* Global Chat Item (Pinned) */}
-                <div onClick={() => router.push('/chat?chatId=global&name=Global Chat')} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 cursor-pointer transition-all hover:scale-[1.02] mb-6 bg-gradient-to-r from-purple-500/20 to-transparent border border-purple-500/30 shadow-[0_4px_20px_-5px_rgba(147,51,234,0.3)] group">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
-                        <span className="text-sm font-bold text-white">GC</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <span className="font-bold text-base text-white block">Global Chat</span>
-                        <span className="text-xs text-purple-300 font-medium tracking-wide">Public Channel</span>
-                    </div>
-                </div>
-
-                <div className="px-2 py-2 text-xs font-bold text-zinc-500 uppercase tracking-widest">Direct Messages</div>
-                {friends.length === 0 ? (
-                    <div className="text-center p-8 text-zinc-600 text-sm">No friends yet.</div>
-                ) : (
-                    friends.map(friend => {
-                        const chatId = currentUser.id < friend.id ? `dm_${currentUser.id}_${friend.id}` : `dm_${friend.id}_${currentUser.id}`
-                        return (
-                            <div key={friend.id} onClick={() => router.push(`/chat?chatId=${chatId}&name=${friend.username}&avatar=${encodeURIComponent(friend.avatar_url)}`)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group">
-                                <div className="relative">
-                                    <Avatar src={friend.avatar_url} fallback={friend.username} className="w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors" />
-                                    {friend.unread > 0 && <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-zinc-950 shadow-lg animate-pulse">{friend.unread}</span>}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <span className="font-semibold text-base text-zinc-200 block group-hover:text-white transition-colors">{friend.username}</span>
-                                    <span className="text-sm text-zinc-500 truncate group-hover:text-zinc-400 transition-colors">{friend.bio || "Available"}</span>
-                                </div>
-                            </div>
-                        )
-                    })
-                )}
-            </div>
-        )}
-
-        {/* Groups Tab Content */}
-        {activeTab === 'groups' && (
-            <div className="space-y-2">
-                <div className="px-2 py-2 text-xs font-bold text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                    <span>My Groups</span>
-                    <span className="bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full text-[10px]">{groups.filter(g => g.status === 'active').length}</span>
-                </div>
-
-                {groups.filter(g => g.status === 'active').length === 0 ? (
-                    <div className="px-4 py-8 text-sm text-zinc-600 italic text-center border-2 border-dashed border-zinc-800 rounded-3xl mb-4 hover:border-zinc-700 transition-colors">
-                        No groups joined.<br />
-                        <button onClick={() => setShowGroupModal(true)} className="text-purple-400 hover:text-purple-300 font-bold mt-2 hover:underline">Create one?</button>
-                    </div>
-                ) : (
-                    <div className="mb-4 space-y-2">
-                        {groups.filter(g => g.status === 'active').map(group => (
-                            <div
-                                key={group.id}
-                                onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.image_url || '')}&type=group`)}
-                                className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group"
-                            >
-                                <Avatar src={group.image_url} fallback={group.name} className="w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors shadow-lg" />
-                                <div className="flex-1 min-w-0">
-                                    <span className="font-semibold text-base text-zinc-200 block group-hover:text-white truncate">{group.name}</span>
-                                    <span className="text-sm text-zinc-500 truncate group-hover:text-zinc-400">{group.description || 'Group Chat'}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        )}
-
-        {activeTab === 'search' && (
-            <div className="space-y-6">
-                <div className="px-1"><Input placeholder="Search people..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-black/40 border-white/10 rounded-xl h-12 text-lg focus:ring-purple-500/50" /></div>
-                <div className="space-y-2">
-                    {searchResults.map(user => (
-                        <div key={user.id} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
-                            <Avatar src={user.avatar_url} fallback={user.username} className="w-12 h-12" />
-                            <div className="flex-1 min-w-0"><span className="font-bold text-base text-zinc-200 block">{user.username}</span></div>
-                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full text-purple-400 hover:bg-purple-500/20 hover:text-purple-300" onClick={() => sendRequest(user.id)}><UserPlus className="w-5 h-5" /></Button>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )}
-
-        {activeTab === 'requests' && (
-            <div className="space-y-6">
-                {/* Group Invites Section */}
-                {groups.filter(g => g.status === 'pending').length > 0 && (
-                    <div className="space-y-3">
-                        <div className="px-2 py-1 text-xs font-bold text-zinc-500 uppercase tracking-widest">Group Invites</div>
-                        {groups.filter(g => g.status === 'pending').map(group => (
-                            <div key={group.id} className="bg-gradient-to-br from-purple-900/20 to-zinc-900/50 p-5 rounded-3xl border border-purple-500/30">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="w-12 h-12 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center shadow-lg">
-                                        <Users className="w-6 h-6 text-purple-400" />
-                                    </div>
-                                    <div>
-                                        <span className="font-bold text-base text-white block">{group.name}</span>
-                                        <span className="text-sm text-zinc-400">Invited you to join</span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-10 rounded-xl font-bold shadow-lg shadow-purple-900/20" onClick={async () => {
-                                        await supabase.rpc('respond_to_group_invite', { p_channel_id: group.id, accept: true })
-                                        fetchInitialData(currentUser?.id)
-                                    }}>
-                                        <Check className="w-4 h-4 mr-2" /> Join
-                                    </Button>
-                                    <Button size="sm" variant="ghost" className="flex-1 h-10 rounded-xl hover:bg-white/10" onClick={async () => {
-                                        await supabase.rpc('respond_to_group_invite', { p_channel_id: group.id, accept: false })
-                                        fetchInitialData(currentUser?.id)
-                                    }}>
-                                        <X className="w-4 h-4 mr-2" /> Decline
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Friend Requests Section */}
-                <div className="space-y-3">
-                    {incomingRequests.length > 0 && <div className="px-2 py-1 text-xs font-bold text-zinc-500 uppercase tracking-widest">Friend Requests</div>}
-                    {incomingRequests.length === 0 && groups.filter(g => g.status === 'pending').length === 0 && <div className="text-center p-12 text-zinc-500 text-base italic">No new requests</div>}
-
-                    {incomingRequests.map(req => (
-                        <div key={req.id} className="bg-zinc-900/40 p-5 rounded-3xl border border-white/5 hover:border-white/10 transition-colors">
-                            <div className="flex items-center gap-4 mb-4"><Avatar src={req.sender.avatar_url} fallback={req.sender.username} className="w-12 h-12" /><span className="font-bold text-base text-white">{req.sender.username}</span></div>
-                            <div className="flex gap-3">
-                                <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700 h-10 rounded-xl" onClick={() => handleRequest(req.id, 'accepted')}><Check className="w-4 h-4 mr-2" /> Accept</Button>
-                                <Button size="sm" variant="ghost" className="flex-1 h-10 rounded-xl hover:bg-white/10" onClick={() => handleRequest(req.id, 'rejected')}><X className="w-4 h-4 mr-2" /> Ignore</Button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )}
-
-    </ScrollArea>
-    {showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} />}
-    {showGroupModal && <CreateGroupModal onClose={() => setShowGroupModal(false)} currentUser={currentUser} onGroupCreated={() => fetchInitialData(currentUser?.id)} />}
-    <ProfileSetup onComplete={() => fetchSession()} />
-</div>
-        </div >
     )
 }
