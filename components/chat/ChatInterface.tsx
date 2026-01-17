@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { GroupInfoModal } from '@/components/chat/GroupInfoModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DEFAULT_USER_AVATAR, DEFAULT_GROUP_AVATAR, WORLD_CHAT_AVATAR } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 
 export default function ChatInterface() {
     const searchParams = useSearchParams()
