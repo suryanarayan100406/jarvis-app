@@ -41,7 +41,10 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
     })).filter(r => r.count > 0) // Only show if count > 0
 
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.2 }}
             className={cn("flex w-full mb-6", isOwn ? "justify-end" : "justify-start")}
             onMouseLeave={() => setShowReactions(false)}
         >
@@ -137,6 +140,6 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                     </AnimatePresence>
                 </div>
             </div>
-        </div>
+        </motion.div>
     )
 }

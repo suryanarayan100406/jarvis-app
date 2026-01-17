@@ -317,11 +317,12 @@ export function Sidebar() {
                                 </div>
                             ) : (
                                 <div className="mb-4 space-y-2">
-                                    {groups.filter(g => g.status === 'active').map(group => (
+                                    {groups.filter(g => g.status === 'active').map((group, i) => (
                                         <div
                                             key={group.id}
+                                            style={{ animationDelay: `${i * 100}ms` }}
                                             onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.image_url || '')}&type=group`)}
-                                            className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group"
+                                            className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-backwards"
                                         >
                                             <Avatar src={group.image_url} fallback={group.name} className="w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors shadow-lg" />
                                             <div className="flex-1 min-w-0">
