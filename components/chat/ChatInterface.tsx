@@ -123,7 +123,6 @@ export default function ChatInterface() {
     }
 
     return (
-    return (
         <div className="glass-panel mx-3 my-3 rounded-2xl flex flex-col h-[calc(100vh-1.5rem)] relative animate-in fade-in zoom-in duration-500 select-none border-l-0">
             {/* Summary Overlay */}
             {summary && (
