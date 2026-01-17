@@ -248,7 +248,7 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                             <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end gap-6 bg-gradient-to-t from-zinc-900 to-transparent">
                                 <div className="relative group/avatar shrink-0">
                                     <Avatar className="w-24 h-24 border-4 border-zinc-900 shadow-2xl" src={channel.image_url || DEFAULT_GROUP_AVATAR} fallback={channel.name[0]} />
-                                    {isAdmin && (
+                                    {(isAdmin || config.edit_info) && (
                                         <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
                                             <Camera className="w-6 h-6 text-white" />
                                         </button>
@@ -296,7 +296,7 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                                                     ) : (
                                                         <div className="bg-white/5 p-4 rounded-xl border border-white/5 group relative">
                                                             <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap">{channel.description || "No description provided."}</p>
-                                                            {isAdmin && (
+                                                            {(isAdmin || config.edit_info) && (
                                                                 <Button size="icon" variant="ghost" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setIsEditing(true)}>
                                                                     <Edit2 className="w-4 h-4" />
                                                                 </Button>
