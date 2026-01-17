@@ -26,6 +26,7 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   --animate-reaction: reaction-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  --animate-float: float 6s ease-in-out infinite;
 
   @keyframes reaction-pop {
     0% {
@@ -40,12 +41,22 @@
       transform: scale(1);
     }
   }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
 }
 
-/* 
-  Variable Definitions (HSL values without 'hsl()') 
-  Tailwind v4 theme maps these to colors.
-*/
 :root {
   /* Gen Z / Cyberpunk-ish Vibe - Light Mode */
   --background: 0 0% 100%;
@@ -72,39 +83,72 @@
 
 .dark {
   /* Deep Space Black / Neon Accents */
-  --background: 240 10% 3.9%;
+  --background: 260 50% 5%;
+  /* Deep Purple-Black */
   --foreground: 0 0% 98%;
-  --card: 240 10% 5%;
+  --card: 260 50% 8%;
   --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
+  --popover: 260 50% 8%;
   --popover-foreground: 0 0% 98%;
   --primary: 263 70% 50%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 240 3.7% 15.9%;
+  --secondary: 260 30% 15%;
   --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
+  --muted: 260 30% 15%;
+  --muted-foreground: 260 20% 65%;
+  --accent: 260 30% 15%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
+  --border: 260 30% 20%;
+  --input: 260 30% 20%;
   --ring: 263 70% 50%;
 }
 
-/* Base styles using the new theme variables */
 @layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-zinc-950 text-foreground overflow-hidden selection:bg-purple-500/30;
+    /* Mesh Gradient Background */
+    background-image:
+      radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+    perspective: 1200px;
+    /* Enable 3D space */
   }
 }
 
-/* Custom Scrollbar for Dark Theme consistency */
+/* 3D / Glass Utilities */
+@layer components {
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.37)];
+  }
+
+  .glass-card-hover {
+    @apply transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(124, 58, 237, 0.5)];
+  }
+
+  .text-shadow-glow {
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+  }
+
+  /* 3D Rail Effect */
+  .rail-3d {
+    transform-style: preserve-3d;
+    transform: rotateY(5deg) scale(0.95);
+    transition: transform 0.3s ease;
+  }
+
+  .rail-3d:hover {
+    transform: rotateY(0deg) scale(1);
+  }
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -121,10 +165,4 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
-}
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }

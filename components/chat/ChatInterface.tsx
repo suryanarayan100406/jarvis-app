@@ -123,7 +123,8 @@ export default function ChatInterface() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-background/50 backdrop-blur-3xl relative">
+    return (
+        <div className="glass-panel mx-4 my-4 rounded-3xl flex flex-col h-[calc(100vh-2rem)] relative animate-in fade-in zoom-in duration-500 select-none">
             {/* Summary Overlay */}
             {summary && (
                 <div className="absolute inset-x-4 top-20 z-50 bg-black/80 border border-purple-500/50 p-6 rounded-xl backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in duration-300">
@@ -140,9 +141,9 @@ export default function ChatInterface() {
             )}
 
             {/* Chat Header */}
-            <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-secondary/20">
+            <div className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-white/5 rounded-t-3xl backdrop-blur-md">
                 <div
-                    className={`flex items-center gap-3 ${chatType === 'group' ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    className={`flex items-center gap-4 ${chatType === 'group' ? 'cursor-pointer hover:opacity-80 transition-all hover:translate-x-1' : ''}`}
                     onClick={() => {
                         if (chatType === 'group') {
                             setShowGroupInfo(true)
@@ -150,13 +151,15 @@ export default function ChatInterface() {
                     }}
                 >
                     {chatAvatar ? (
-                        <Avatar src={chatAvatar} fallback={chatName} className="w-10 h-10 border border-white/10" />
+                        <Avatar src={chatAvatar} fallback={chatName} className="w-12 h-12 border-2 border-white/10 shadow-lg" />
                     ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 shadow-lg shadow-purple-500/20" />
                     )}
                     <div>
-                        <h3 className="font-bold">{chatName}</h3>
-                        <p className="text-xs text-green-400">Live</p>
+                        <h3 className="font-bold text-xl drop-shadow-sm">{chatName}</h3>
+                        <p className="text-xs text-green-400 font-medium tracking-wide flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" /> Live
+                        </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -165,7 +168,7 @@ export default function ChatInterface() {
                         disabled={isSummarizing}
                         variant="ghost"
                         size="sm"
-                        className="text-purple-400 hover:text-purple-300 hover:bg-purple-900/20"
+                        className="text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 rounded-xl"
                     >
                         {isSummarizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
                         {isSummarizing ? 'Cooking...' : 'Summarize'}
@@ -174,13 +177,13 @@ export default function ChatInterface() {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 {isLoading ? (
                     <div className="flex justify-center items-center h-full text-muted-foreground">
                         <Loader2 className="animate-spin w-8 h-8" />
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {messages.map((msg) => {
                             // Check ownership accurately
                             const isOwn = currentUser && msg.user_id === currentUser.id
@@ -201,8 +204,8 @@ export default function ChatInterface() {
                             )
                         })}
                         {messages.length === 0 && (
-                            <div className="text-center text-muted-foreground mt-10">
-                                No messages yet. Be the first!
+                            <div className="text-center text-zinc-500 mt-20 text-lg font-light tracking-wide">
+                                Quiet in here... <span className="text-2xl">🤫</span>
                             </div>
                         )}
                         {/* Invisible element to scroll to */}
@@ -212,9 +215,9 @@ export default function ChatInterface() {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-background/80 border-t border-white/5">
-                <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-4xl mx-auto">
-                    <Button type="button" size="icon" variant="ghost" className="text-muted-foreground hover:text-white">
+            <div className="p-6 bg-transparent">
+                <form onSubmit={handleSendMessage} className="flex items-center gap-3 max-w-5xl mx-auto bg-black/40 p-2 pl-4 rounded-3xl border border-white/5 focus-within:border-purple-500/50 focus-within:shadow-[0_0_30px_-5px_rgba(147,51,234,0.3)] transition-all">
+                    <Button type="button" size="icon" variant="ghost" className="text-zinc-400 hover:text-white shrink-0">
                         <Paperclip className="w-5 h-5" />
                     </Button>
 
@@ -223,17 +226,17 @@ export default function ChatInterface() {
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             placeholder="Type a message..."
-                            className="pr-10 bg-secondary/50 border-transparent focus:border-primary/50"
+                            className="bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-zinc-500 h-12 text-base"
                         />
                     </div>
 
                     {inputValue ? (
-                        <Button type="submit" size="icon" className="rounded-full bg-primary hover:bg-primary/90">
+                        <Button type="submit" size="icon" className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shrink-0 mr-1 transition-transform active:scale-95">
                             <Send className="w-4 h-4 ml-0.5" />
                         </Button>
                     ) : (
-                        <Button type="button" size="icon" variant="secondary" className="rounded-full">
-                            <Mic className="w-4 h-4" />
+                        <Button type="button" size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 shrink-0 mr-1">
+                            <Mic className="w-4 h-4 text-zinc-400" />
                         </Button>
                     )}
                 </form>
