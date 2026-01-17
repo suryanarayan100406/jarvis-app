@@ -439,5 +439,6 @@ export function Sidebar() {
     {showGroupModal && <CreateGroupModal onClose={() => setShowGroupModal(false)} currentUser={currentUser} onGroupCreated={() => fetchInitialData(currentUser?.id)} />}
     <ProfileSetup onComplete={() => fetchSession()} />
 </div>
+        </div >
     )
 }
