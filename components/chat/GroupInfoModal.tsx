@@ -66,11 +66,13 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     const fetchGroupDetails = async () => {
         try {
             // 1. Fetch Channel Info & Config
-            const { data: channelData } = await supabase
+            const { data: channelData, error: channelError } = await supabase
                 .from('channels')
                 .select('*')
                 .eq('id', channelId)
                 .single()
+
+            if (channelError) throw channelError
 
             setChannel(channelData)
             setEditName(channelData?.name || '')
@@ -78,11 +80,13 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
             if (channelData?.config) setConfig(channelData.config)
 
             // 2. Fetch Members
-            const { data: memberData } = await supabase
+            const { data: memberData, error: memberError } = await supabase
                 .from('channel_members')
                 .select('*, profiles:user_id(*)')
                 .eq('channel_id', channelId)
                 .eq('status', 'active')
+
+            if (memberError) throw memberError
 
             setMembers(memberData || [])
 
@@ -98,8 +102,10 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
             }
 
             setIsLoading(false)
-        } catch (e) {
+        } catch (e: any) {
             console.error("Failed to fetch group info", e)
+            alert("Error loading group details: " + e.message)
+            setIsLoading(false)
         }
     }
 
@@ -118,27 +124,51 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     }
 
     const handleAddMember = async (userId: string) => {
-        await supabase.from('channel_members').insert({
-            channel_id: channelId,
-            user_id: userId,
-            role: 'member'
-        })
-        setSearchMemberQuery('')
-        fetchGroupDetails()
+        try {
+            const { error } = await supabase.from('channel_members').insert({
+                channel_id: channelId,
+                user_id: userId,
+                role: 'member'
+            })
+
+            if (error) throw error
+
+            setSearchMemberQuery('')
+            fetchGroupDetails()
+            alert("Member added successfully!")
+        } catch (e: any) {
+            console.error(e)
+            alert("Failed to add member: " + e.message)
+        }
     }
 
     const handleUpdateConfig = async (key: string, value: boolean) => {
-        if (!isAdmin) return
+        if (!isAdmin) {
+            alert("You must be an admin to change settings.")
+            return
+        }
+
+        // Optimistic update
+        const previousConfig = { ...config }
         const newConfig = { ...config, [key]: value }
         setConfig(newConfig)
 
-        await supabase
-            .from('channels')
-            .update({ config: newConfig })
-            .eq('id', channelId)
+        try {
+            const { error } = await supabase
+                .from('channels')
+                .update({ config: newConfig })
+                .eq('id', channelId)
+
+            if (error) throw error
+
+        } catch (e: any) {
+            console.error('Failed to update config:', e)
+            alert('Failed to save settings: ' + (e.message || "Unknown error"))
+            // Revert on error
+            setConfig(previousConfig)
+        }
     }
 
-    // Original handlers (truncated for brevity but logic kept same)
     const handleLeaveGroup = async () => {
         if (!confirm("Leave group?")) return
         await supabase.from('channel_members').delete().eq('channel_id', channelId).eq('user_id', currentUser.id)
@@ -146,9 +176,14 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     }
 
     const handleUpdateGroup = async () => {
-        await supabase.from('channels').update({ name: editName, description: editDesc }).eq('id', channelId)
-        setIsEditing(false)
-        fetchGroupDetails()
+        try {
+            const { error } = await supabase.from('channels').update({ name: editName, description: editDesc }).eq('id', channelId)
+            if (error) throw error
+            setIsEditing(false)
+            fetchGroupDetails()
+        } catch (e: any) {
+            alert("Failed to update group: " + e.message)
+        }
     }
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,7 +201,6 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
         setUploadingImage(false)
     }
 
-    // ... (Keep existing role management functions: promote, demote, kick, transfer)
     const handlePromote = async (uid: string) => { if (confirm("Promote?")) await supabase.from('channel_members').update({ role: 'admin' }).eq('channel_id', channelId).eq('user_id', uid); fetchGroupDetails() }
     const handleDemote = async (uid: string) => { if (confirm("Demote?")) await supabase.from('channel_members').update({ role: 'member' }).eq('channel_id', channelId).eq('user_id', uid); fetchGroupDetails() }
     const handleKick = async (uid: string) => { if (confirm("Kick?")) await supabase.from('channel_members').delete().eq('channel_id', channelId).eq('user_id', uid); fetchGroupDetails() }
@@ -182,6 +216,7 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
     const generateInvite = async () => {
         const { data, error } = await supabase.rpc('regenerate_invite_slug', { target_channel_id: channelId })
         if (!error) fetchGroupDetails()
+        else alert("Failed to generate link")
     }
 
     const handleDeleteGroup = async () => {
