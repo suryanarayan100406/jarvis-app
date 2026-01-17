@@ -45,22 +45,28 @@ export function Sidebar() {
             })
             .subscribe()
 
-        // 2. Messages Listener (Global for now, to update badges)
+        // 2. Messages Listener 
         const messagesChannel = supabase
             .channel('sidebar_messages')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                // Keep the simple +1 logic if we want, or just rely on the random mock refresh
-                // For "revert to random", we effectively stop trying to be smart.
-                // But generally the user "liked" the badges, just wanted them to work.
-                // Since we are reverting to "Random", real updates don't make sense.
+                // Badge logic here if we were using it
             })
-        // .subscribe() // Commented out to disabling logic
+
+        // [NEW] 3. Groups Listener (Updates list when name/image changes)
+        // We listen to ALL channels updates, and let the UI re-render if it matches our list
+        // Ideally we filter, but id=in is hard with realtime. Global listen is okay for small scale.
+        const groupsChannel = supabase
+            .channel('sidebar_groups')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'channels' }, () => {
+                fetchInitialData(currentUser.id) // Refresh list
+            })
+            .subscribe()
 
         fetchInitialData(currentUser.id)
 
         return () => {
             supabase.removeChannel(requestsChannel)
-            // supabase.removeChannel(messagesChannel)
+            supabase.removeChannel(groupsChannel)
         }
     }, [currentUser])
 
