@@ -179,70 +179,70 @@ export function Sidebar() {
     }
 
     return (
-        <div className="h-full flex py-4 pl-4 perspective-1000">
+        <div className="h-full flex py-3 pl-3 perspective-1000">
             {/* LEFT RAIL (Vertical Tabs) - Floating Glass Strip */}
-            <div className="w-20 h-full flex flex-col items-center py-6 gap-6 glass-panel rounded-3xl transition-all duration-500 hover:scale-105 hover:shadow-[0_0_50px_-10px_rgba(124,58,237,0.3)]">
+            <div className="w-[70px] h-full flex flex-col items-center py-4 gap-4 glass-panel rounded-2xl transition-all duration-500 hover:rotate-y-2 hover:scale-[1.02] hover:shadow-[0_0_40px_-5px_rgba(124,58,237,0.4)] z-50">
                 {/* Profile Icon */}
-                <div onClick={() => setShowProfileModal(true)} className="cursor-pointer hover:scale-110 transition-transform duration-300">
-                    <Avatar src={currentUser?.avatar_url} fallback={currentUser?.username?.slice(0, 2)} className="w-12 h-12 border-2 border-white/20 shadow-lg" />
+                <div onClick={() => setShowProfileModal(true)} className="cursor-pointer hover:scale-105 transition-transform duration-300">
+                    <Avatar src={currentUser?.avatar_url} fallback={currentUser?.username?.slice(0, 2)} className="w-10 h-10 border border-white/20 shadow-lg" />
                 </div>
 
-                <div className="h-px w-8 bg-white/10" />
+                <div className="h-px w-8 bg-white/5" />
 
                 {/* DMs Tab */}
                 <button
                     onClick={() => setActiveTab('dms')}
-                    className={cn("p-4 rounded-2xl transition-all duration-300 relative group", activeTab === 'dms' ? 'bg-purple-600 shadow-[0_0_20px_-5px_rgba(147,51,234,0.6)] text-white scale-110' : 'text-zinc-400 hover:text-white hover:bg-white/10')}
+                    className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'dms' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
                     title="Direct Messages"
                 >
-                    <MessageSquare className="w-6 h-6" />
-                    {activeTab === 'dms' && <div className="absolute inset-0 bg-purple-400/20 blur-xl rounded-full" />}
+                    <MessageSquare className="w-5 h-5" />
+                    {activeTab === 'dms' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
                 </button>
 
                 {/* Groups Tab */}
                 <button
                     onClick={() => setActiveTab('groups')}
-                    className={cn("p-4 rounded-2xl transition-all duration-300 relative group", activeTab === 'groups' ? 'bg-purple-600 shadow-[0_0_20px_-5px_rgba(147,51,234,0.6)] text-white scale-110' : 'text-zinc-400 hover:text-white hover:bg-white/10')}
+                    className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'groups' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
                     title="Groups"
                 >
-                    <Users className="w-6 h-6" />
-                    {activeTab === 'groups' && <div className="absolute inset-0 bg-purple-400/20 blur-xl rounded-full" />}
+                    <Users className="w-5 h-5" />
+                    {activeTab === 'groups' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
                 </button>
 
                 {/* Search Tab */}
                 <button
                     onClick={() => setActiveTab('search')}
-                    className={cn("p-4 rounded-2xl transition-all duration-300 relative group", activeTab === 'search' ? 'bg-purple-600 shadow-[0_0_20px_-5px_rgba(147,51,234,0.6)] text-white scale-110' : 'text-zinc-400 hover:text-white hover:bg-white/10')}
+                    className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'search' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
                     title="Find People"
                 >
-                    <Search className="w-6 h-6" />
-                    {activeTab === 'search' && <div className="absolute inset-0 bg-purple-400/20 blur-xl rounded-full" />}
+                    <Search className="w-5 h-5" />
+                    {activeTab === 'search' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
                 </button>
 
                 {/* Requests Tab */}
                 <div className="relative">
                     <button
                         onClick={() => setActiveTab('requests')}
-                        className={cn("p-4 rounded-2xl transition-all duration-300 relative group", activeTab === 'requests' ? 'bg-purple-600 shadow-[0_0_20px_-5px_rgba(147,51,234,0.6)] text-white scale-110' : 'text-zinc-400 hover:text-white hover:bg-white/10')}
+                        className={cn("p-3 rounded-xl transition-all duration-300 relative group", activeTab === 'requests' ? 'bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)] text-white scale-105' : 'text-zinc-400 hover:text-white hover:bg-white/5')}
                         title="Requests"
                     >
-                        <Bell className="w-6 h-6" />
-                        {activeTab === 'requests' && <div className="absolute inset-0 bg-purple-400/20 blur-xl rounded-full" />}
+                        <Bell className="w-5 h-5" />
+                        {activeTab === 'requests' && <div className="absolute inset-0 bg-purple-400/20 blur-lg rounded-full" />}
                     </button>
-                    {incomingRequests.length > 0 && <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-zinc-950 animate-bounce shadow-[0_0_10px_rgba(239,68,68,0.5)]" />}
+                    {incomingRequests.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-zinc-950 animate-bounce shadow-[0_0_8px_rgba(239,68,68,0.5)]" />}
                 </div>
 
                 <div className="flex-1" />
 
-                <button onClick={handleLogout} className="p-3 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-2xl transition-all hover:scale-110" title="Logout">
-                    <LogOut className="w-6 h-6" />
+                <button onClick={handleLogout} className="p-2.5 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all hover:scale-105" title="Logout">
+                    <LogOut className="w-5 h-5" />
                 </button>
             </div>
             {/* RIGHT PANEL (Content) */}
-            <div className="flex-1 flex flex-col min-w-0 glass-panel rounded-3xl m-4 ml-0 animate-in fade-in slide-in-from-left-4 duration-500">
+            <div className="flex-1 flex flex-col min-w-0 glass-panel rounded-2xl m-3 ml-0 duration-500">
                 {/* Header (Contextual) */}
-                <div className="h-20 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-white/5 backdrop-blur-sm rounded-t-3xl">
-                    <h2 className="font-bold text-2xl text-white tracking-tight drop-shadow-md">
+                <div className="h-16 border-b border-white/5 flex items-center justify-between px-5 shrink-0 bg-white/5 backdrop-blur-sm rounded-t-2xl">
+                    <h2 className="font-bold text-lg text-white tracking-tight drop-shadow-md">
                         {activeTab === 'dms' && 'Messages'}
                         {activeTab === 'groups' && 'Groups'}
                         {activeTab === 'search' && 'Find'}
@@ -253,10 +253,10 @@ export function Sidebar() {
                             size="sm"
                             variant="ghost"
                             onClick={() => setShowGroupModal(true)}
-                            className="h-10 w-10 p-0 rounded-full bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 transition-all hover:scale-110 hover:rotate-90"
+                            className="h-8 w-8 p-0 rounded-full bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 transition-all hover:scale-110 hover:rotate-90"
                             title="New Group"
                         >
-                            <Users className="w-5 h-5" />
+                            <Users className="w-4 h-4" />
                             <span className="sr-only">New Group</span>
                         </Button>
                     )}
