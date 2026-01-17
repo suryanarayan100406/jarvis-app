@@ -345,9 +345,33 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                                                     </div>
                                                 ) : null}
 
-                                                {/* Members List */}
+                                                {/* Pending Invites List */}
+                                                {members.some(m => m.status === 'pending') && (
+                                                    <div className="space-y-2 mb-6">
+                                                        <h4 className="text-xs font-bold text-yellow-500 uppercase px-1">Pending Invites</h4>
+                                                        {members.filter(m => m.status === 'pending').map(m => (
+                                                            <div key={m.user_id} className="flex items-center justify-between p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+                                                                <div className="flex items-center gap-3">
+                                                                    <Avatar src={m.profiles.avatar_url || DEFAULT_USER_AVATAR} className="opacity-75" />
+                                                                    <div>
+                                                                        <p className="font-medium text-white flex items-center gap-2">
+                                                                            {m.profiles.username}
+                                                                            <span className="text-[10px] bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded">Invited</span>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                {isAdmin && (
+                                                                    <Button size="icon" variant="ghost" title="Revoke Invite" onClick={() => handleKick(m.user_id)}><X className="w-4 h-4 text-zinc-500 hover:text-red-500" /></Button>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Active Members List */}
                                                 <div className="space-y-2">
-                                                    {members.map(m => (
+                                                    <h4 className="text-xs font-bold text-zinc-500 uppercase px-1 mb-2">Active Members</h4>
+                                                    {members.filter(m => m.status !== 'pending').map(m => (
                                                         <div key={m.user_id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
                                                             <div className="flex items-center gap-3">
                                                                 <Avatar src={m.profiles.avatar_url || DEFAULT_USER_AVATAR} />
