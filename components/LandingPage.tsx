@@ -1,9 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonVariants } from '@/components/ui/Button'
 import { ArrowRight, MessageCircle, Zap, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 export default function LandingPage() {
     return (
@@ -43,16 +44,18 @@ export default function LandingPage() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-                    <Button asChild size="lg" className="rounded-full text-lg px-8 py-6">
-                        <Link href="/login">
-                            Get Started <ArrowRight className="ml-2 w-5 h-5" />
-                        </Link>
-                    </Button>
-                    <Button asChild size="lg" variant="neon" className="rounded-full text-lg px-8 py-6">
-                        <Link href="/anonymous">
-                            Go Incognito <Shield className="ml-2 w-5 h-5" />
-                        </Link>
-                    </Button>
+                    <Link
+                        href="/login"
+                        className={cn(buttonVariants("default", "lg"), "rounded-full text-lg px-8 py-6")}
+                    >
+                        Get Started <ArrowRight className="ml-2 w-5 h-5" />
+                    </Link>
+                    <Link
+                        href="/anonymous"
+                        className={cn(buttonVariants("neon", "lg"), "rounded-full text-lg px-8 py-6")}
+                    >
+                        Go Incognito <Shield className="ml-2 w-5 h-5" />
+                    </Link>
                 </div>
             </motion.div>
 
