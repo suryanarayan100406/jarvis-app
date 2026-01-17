@@ -206,7 +206,8 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
             .eq('user_id', currentUser.id)
 
         if (error) {
-            alert("Failed to update mute status")
+            console.error(error)
+            alert("Failed to update mute status: " + error.message)
             setIsMuted(!newMutedStatus) // Revert
         }
     }
