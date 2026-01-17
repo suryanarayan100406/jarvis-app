@@ -43,16 +43,16 @@ export default function LandingPage() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-                    <Link href="/login">
-                        <Button size="lg" className="rounded-full text-lg px-8 py-6">
+                    <Button asChild size="lg" className="rounded-full text-lg px-8 py-6">
+                        <Link href="/login">
                             Get Started <ArrowRight className="ml-2 w-5 h-5" />
-                        </Button>
-                    </Link>
-                    <Link href="/anonymous">
-                        <Button size="lg" variant="neon" className="rounded-full text-lg px-8 py-6">
+                        </Link>
+                    </Button>
+                    <Button asChild size="lg" variant="neon" className="rounded-full text-lg px-8 py-6">
+                        <Link href="/anonymous">
                             Go Incognito <Shield className="ml-2 w-5 h-5" />
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 </div>
             </motion.div>
 

@@ -1,6 +1,4 @@
-import * as React from "react"
-
-import { cn } from "@/lib/utils"
+import { Slot } from "@radix-ui/react-slot"
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -11,12 +9,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant = "default", size = "default", asChild = false, ...props }, ref) => {
-        // I am skipping Radix Slot for now to avoid installing another dep, just using standard button
-        // Actually, Slot is useful for polymorphism but I'll stick to simple button if Radix isn't installed.
-        // Wait, I didn't install @radix-ui/react-slot. I'll just use "button".
-
-        // const Comp = asChild ? Slot : "button"
-        const Comp = "button"
+        const Comp = asChild ? Slot : "button"
 
         const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transition-all duration-300 active:scale-95"
 
