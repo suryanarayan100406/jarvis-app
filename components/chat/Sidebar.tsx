@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/ScrollArea'
 import { Avatar } from '@/components/ui/Avatar'
 import { supabase } from '@/lib/supabase'
 import { ProfileSetup } from '@/components/auth/ProfileSetup'
-import { MoreVertical, LogOut, Settings, Search, UserPlus, Users, Bell, Check, X } from 'lucide-react'
+import { MoreVertical, LogOut, Settings, Search, UserPlus, Users, Bell, Check, X, MessageSquare } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
@@ -195,7 +195,7 @@ export function Sidebar() {
                     className={cn("p-3 rounded-xl transition-all", activeTab === 'dms' ? 'bg-purple-600/20 text-purple-400' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}
                     title="Direct Messages"
                 >
-                    <SortAsc className="w-6 h-6 rotate-180" /> {/* Simulating a chat bubbles icon or similar */}
+                    <MessageSquare className="w-6 h-6" />
                 </button>
 
                 {/* Groups Tab */}
