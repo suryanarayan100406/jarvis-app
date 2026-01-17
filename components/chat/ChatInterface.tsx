@@ -83,10 +83,7 @@ export default function ChatInterface() {
         })
     }, [channelId])
 
-    // Prevent rendering if not logged in (optional, but good for flicker)
-    if (!currentUser) return <div className="h-full flex items-center justify-center text-muted-foreground"><Loader2 className="animate-spin" /></div>
-
-    // [NEW] Config & Permission State
+    // [NEW] Config & Permission State - MOVED UP TO FIX HOOK ERROR
     const [channelConfig, setChannelConfig] = useState<any>(null)
     const [canSend, setCanSend] = useState(true)
     const [isAdmin, setIsAdmin] = useState(false)
@@ -207,6 +204,8 @@ export default function ChatInterface() {
             return () => { supabase.removeChannel(channelSub) }
         }
     }, [channelId, chatType, chatName, chatAvatar])
+
+    if (!currentUser) return <div className="h-full flex items-center justify-center text-muted-foreground"><Loader2 className="animate-spin" /></div>
 
     return (
         <div className="glass-panel mx-3 my-3 rounded-2xl flex flex-col h-[calc(100vh-1.5rem)] relative animate-in fade-in zoom-in duration-500 select-none border-l-0">
