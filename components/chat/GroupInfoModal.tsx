@@ -222,7 +222,7 @@ export function GroupInfoModal({ channelId, onClose, currentUser }: GroupInfoMod
                                 </div>
                                 <div className="flex-1 min-w-0 mb-2">
                                     <h2 className="text-3xl font-bold truncate text-white">{channel.name}</h2>
-                                    <p className="text-zinc-400 truncate">{members.length} members • Created {new Date(channel.created_at).toLocaleDateString()}</p>
+                                    <p className="text-zinc-400 truncate">{members.length} members • Created {channel.created_at ? new Date(channel.created_at).toLocaleDateString() : 'recently'}</p>
                                 </div>
                             </div>
                             <Button variant="ghost" size="icon" className="absolute top-4 right-4 text-white/50 hover:text-white" onClick={onClose}><X className="w-6 h-6" /></Button>
