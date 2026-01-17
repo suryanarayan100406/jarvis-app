@@ -10,7 +10,7 @@ import { MoreVertical, LogOut, Settings, Search, UserPlus, Users, Bell, Check, X
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
-import { DEFAULT_USER_AVATAR, DEFAULT_GROUP_AVATAR, WORLD_CHAT_AVATAR } from '@/lib/constants'
+import { DEFAULT_USER_AVATAR, DEFAULT_GROUP_AVATAR, GLOBAL_CHAT_AVATAR } from '@/lib/constants'
 import { useRouter } from 'next/navigation'
 
 import { CreateGroupModal } from '@/components/chat/CreateGroupModal'
@@ -363,13 +363,13 @@ export function Sidebar() {
                                         <div
                                             key={group.id}
                                             style={{ animationDelay: `${i * 100}ms` }}
-                                            onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.name === 'World Chat' ? WORLD_CHAT_AVATAR : (group.image_url || DEFAULT_GROUP_AVATAR))}&type=group`)}
+                                            onClick={() => router.push(`/chat?chatId=${group.id}&name=${encodeURIComponent(group.name)}&avatar=${encodeURIComponent(group.name === 'Global Chat' ? GLOBAL_CHAT_AVATAR : (group.image_url || DEFAULT_GROUP_AVATAR))}&type=group`)}
                                             className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/10 cursor-pointer transition-all hover:translate-x-1 group animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-backwards"
                                         >
                                             <Avatar
-                                                src={group.name === 'World Chat' ? WORLD_CHAT_AVATAR : (group.image_url || DEFAULT_GROUP_AVATAR)}
+                                                src={group.name === 'Global Chat' ? GLOBAL_CHAT_AVATAR : (group.image_url || DEFAULT_GROUP_AVATAR)}
                                                 fallback={group.name[0]}
-                                                className={cn("w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors shadow-lg", group.name === 'World Chat' && "border-blue-500/50 shadow-blue-500/20")}
+                                                className={cn("w-12 h-12 border-2 border-transparent group-hover:border-purple-500/50 transition-colors shadow-lg", group.name === 'Global Chat' && "border-blue-500/50 shadow-blue-500/20")}
                                             />
                                             <div className="flex-1 min-w-0">
                                                 <span className="font-semibold text-base text-zinc-200 block group-hover:text-white truncate">{group.name}</span>

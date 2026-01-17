@@ -11,7 +11,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { GroupInfoModal } from '@/components/chat/GroupInfoModal'
 import { motion, AnimatePresence } from 'framer-motion'
-import { DEFAULT_USER_AVATAR, DEFAULT_GROUP_AVATAR, WORLD_CHAT_AVATAR } from '@/lib/constants'
+import { DEFAULT_USER_AVATAR, DEFAULT_GROUP_AVATAR, GLOBAL_CHAT_AVATAR } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 export default function ChatInterface() {
@@ -158,8 +158,8 @@ export default function ChatInterface() {
                         <Avatar src={chatAvatar} fallback={chatName} className="w-12 h-12 border-2 border-white/10 shadow-lg" />
                     ) : (
                         <Avatar
-                            src={chatName === 'World Chat' ? WORLD_CHAT_AVATAR : (chatType === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR)}
-                            className={cn("w-12 h-12 border-2 border-white/10 shadow-lg", chatName === 'World Chat' && "shadow-blue-500/20 border-blue-500/30")}
+                            src={chatName === 'Global Chat' ? GLOBAL_CHAT_AVATAR : (chatType === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR)}
+                            className={cn("w-12 h-12 border-2 border-white/10 shadow-lg", chatName === 'Global Chat' && "shadow-blue-500/20 border-blue-500/30")}
                         />
                     )}
                     <div>
