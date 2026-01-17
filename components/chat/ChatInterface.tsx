@@ -306,32 +306,42 @@ export default function ChatInterface() {
                 )}
             </div>
 
-            {/* Input Area */}
-            <div className="p-6 bg-transparent">
-                <form onSubmit={handleSendMessage} className="flex items-center gap-3 max-w-5xl mx-auto bg-black/40 p-2 pl-4 rounded-3xl border border-white/5 focus-within:border-purple-500/50 focus-within:shadow-[0_0_30px_-5px_rgba(147,51,234,0.3)] transition-all">
-                    <Button type="button" size="icon" variant="ghost" className="text-zinc-400 hover:text-white shrink-0">
-                        <Paperclip className="w-5 h-5" />
-                    </Button>
-
-                    <div className="flex-1 relative">
+            {/* Footer Input Area */}
+            <div className="h-24 px-8 flex items-center shrink-0 backdrop-blur-md bg-white/5 rounded-b-3xl border-t border-white/5 relative z-20">
+                {!canSend ? (
+                    <div className="w-full py-4 px-6 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center gap-2 text-red-200 font-medium animate-in fade-in slide-in-from-bottom-4">
+                        <Shield className="w-4 h-4" />
+                        <span>Sending messages has been disabled by admins.</span>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-4 bg-black/40 p-2 pl-6 rounded-2xl border border-white/10 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all shadow-lg group">
                         <Input
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            placeholder="Type a message..."
-                            className="bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-zinc-500 h-12 text-base"
+                            placeholder={chatType === 'group' ? `Message ${headerInfo.name}...` : `Message @${headerInfo.name}...`}
+                            className="bg-transparent border-none text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 text-base"
                         />
-                    </div>
-
-                    {inputValue ? (
-                        <Button type="submit" size="icon" className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shrink-0 mr-1 transition-transform active:scale-95">
-                            <Send className="w-4 h-4 ml-0.5" />
-                        </Button>
-                    ) : (
-                        <Button type="button" size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 shrink-0 mr-1">
-                            <Mic className="w-4 h-4 text-zinc-400" />
-                        </Button>
-                    )}
-                </form>
+                        <div className="flex items-center gap-1 pr-2">
+                            < Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl transition-transform hover:scale-110"
+                                onClick={() => alert("Attachments coming soon!")}
+                            >
+                                <Paperclip className="w-5 h-5" />
+                            </Button>
+                            <Button
+                                type="submit"
+                                size="icon"
+                                className="bg-gradient-to-tr from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/50 hover:scale-105 active:scale-95 transition-all duration-300 w-10 h-10"
+                                disabled={!inputValue.trim()}
+                            >
+                                <Send className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </form>
+                )}
             </div>
 
             {/* Modals */}
