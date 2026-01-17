@@ -179,7 +179,7 @@ export function Sidebar() {
     }
 
     return (
-        <div className="h-full py-4 pl-4 perspective-1000">
+        <div className="h-full flex py-4 pl-4 perspective-1000">
             {/* LEFT RAIL (Vertical Tabs) - Floating Glass Strip */}
             <div className="w-20 h-full flex flex-col items-center py-6 gap-6 glass-panel rounded-3xl transition-all duration-500 hover:scale-105 hover:shadow-[0_0_50px_-10px_rgba(124,58,237,0.3)]">
                 {/* Profile Icon */}
