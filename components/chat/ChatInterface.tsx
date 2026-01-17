@@ -86,9 +86,56 @@ export default function ChatInterface() {
     // Prevent rendering if not logged in (optional, but good for flicker)
     if (!currentUser) return <div className="h-full flex items-center justify-center text-muted-foreground"><Loader2 className="animate-spin" /></div>
 
+    // [NEW] Config & Permission State
+    const [channelConfig, setChannelConfig] = useState<any>(null)
+    const [canSend, setCanSend] = useState(true)
+    const [isAdmin, setIsAdmin] = useState(false)
+
+    useEffect(() => {
+        if (!channelId || !currentUser) return
+
+        const fetchConfig = async () => {
+            // 1. Get Channel Config
+            const { data: channel } = await supabase.from('channels').select('config').eq('id', channelId).single()
+
+            // 2. Get My Role
+            const { data: member } = await supabase.from('channel_members').select('role').eq('channel_id', channelId).eq('user_id', currentUser.id).single()
+
+            const config = channel?.config || { send_messages: true } // Default true if missing
+            const role = member?.role || 'member'
+
+            setChannelConfig(config)
+            setIsAdmin(role === 'owner' || role === 'admin')
+
+            // Logic: Can send if (config allows) OR (I am admin/owner)
+            setCanSend(config.send_messages !== false || role === 'owner' || role === 'admin')
+        }
+        fetchConfig()
+
+        // Realtime Listener for Config Changes
+        const channelSub = supabase
+            .channel(`channel_config_${channelId}`)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'channels', filter: `id=eq.${channelId}` }, (payload: any) => {
+                if (payload.new.config) {
+                    const newConfig = payload.new.config
+                    setChannelConfig(newConfig)
+                    // Re-evaluate permission
+                    setCanSend(newConfig.send_messages !== false || isAdmin) // Note: isAdmin might be stale if role changed, but good enough for config update
+                }
+            })
+            .subscribe()
+
+        return () => { supabase.removeChannel(channelSub) }
+    }, [channelId, currentUser, isAdmin]) // Re-run if admin status changes
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!inputValue.trim()) return
+
+        if (!canSend) {
+            alert("Sending messages is disabled in this group.")
+            return
+        }
 
         const content = inputValue
         setInputValue('') // Optimistic clear
@@ -111,7 +158,7 @@ export default function ChatInterface() {
 
         // 3. Insert into DB (passing the ID so it matches!)
         const { error } = await supabase.from('messages').insert({
-            id: tempId, // <--- key trick
+            id: tempId,
             content,
             user_id: currentUser?.id,
             channel_id: channelId,
@@ -121,7 +168,7 @@ export default function ChatInterface() {
 
         if (error) {
             console.error("Failed to send", error)
-            alert("Error sending message. Make sure RLS is set up!")
+            alert("Error sending message: " + error.message) // Show RLS error
         }
     }
 
