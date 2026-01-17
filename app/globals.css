@@ -125,11 +125,16 @@
 /* 3D / Glass Utilities */
 @layer components {
   .glass-panel {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.37)];
+    @apply bg-black/40 backdrop-blur-xl border border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 
   .glass-card-hover {
-    @apply transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(124, 58, 237, 0.5)];
+    @apply transition-all duration-300 hover:transform hover:-translate-y-1;
+  }
+
+  .glass-card-hover:hover {
+    box-shadow: 0 10px 40px -10px rgba(124, 58, 237, 0.5);
   }
 
   .text-shadow-glow {

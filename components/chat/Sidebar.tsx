@@ -435,11 +435,9 @@ export function Sidebar() {
         )}
 
     </ScrollArea>
+    {showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} />}
+    {showGroupModal && <CreateGroupModal onClose={() => setShowGroupModal(false)} currentUser={currentUser} onGroupCreated={() => fetchInitialData(currentUser?.id)} />}
+    <ProfileSetup onComplete={() => fetchSession()} />
 </div>
-
-{ showProfileModal && <ProfileSetup onComplete={() => { setShowProfileModal(false); fetchSession(); }} isEditing={true} /> }
-{ showGroupModal && <CreateGroupModal onClose={() => setShowGroupModal(false)} currentUser={currentUser} onGroupCreated={() => fetchInitialData(currentUser?.id)} /> }
-<ProfileSetup onComplete={() => fetchSession()} />
-        </div >
     )
 }
