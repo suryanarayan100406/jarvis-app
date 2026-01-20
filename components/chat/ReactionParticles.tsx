@@ -5,10 +5,11 @@ import { useEffect, useState } from 'react'
 
 interface ReactionParticlesProps {
     emoji: string
+    isImage?: boolean
     onComplete: () => void
 }
 
-export function ReactionParticles({ emoji, onComplete }: ReactionParticlesProps) {
+export function ReactionParticles({ emoji, isImage, onComplete }: ReactionParticlesProps) {
     const [particles] = useState(() => Array.from({ length: 12 }).map((_, i) => ({
         id: i,
         x: (Math.random() - 0.5) * 100, // Random X spread
@@ -43,7 +44,11 @@ export function ReactionParticles({ emoji, onComplete }: ReactionParticlesProps)
                     }}
                     className="absolute text-2xl"
                 >
-                    {emoji}
+                    {isImage ? (
+                        <img src={emoji} alt="reaction" className="w-8 h-8 object-contain" />
+                    ) : (
+                        emoji
+                    )}
                 </motion.div>
             ))}
         </div>
