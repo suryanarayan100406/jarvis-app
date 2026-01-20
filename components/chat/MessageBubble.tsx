@@ -15,6 +15,8 @@ interface MessageProps {
     reactions?: Record<string, string[]>
     currentUserId?: string
     onReact?: (id: string, emoji: string) => void
+    attachmentUrl?: string | null
+    attachmentType?: string | null
 }
 
 // Gen Z / Modern Reaction Set
@@ -81,7 +83,30 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                         )}
                         whileHover={{ scale: 1.01 }}
                     >
-                        {content}
+                        {attachmentUrl && (
+                            <div className="mb-2">
+                                {attachmentType?.startsWith('image/') ? (
+                                    <div className="rounded-lg overflow-hidden border border-white/10 relative">
+                                        <img
+                                            src={attachmentUrl}
+                                            alt="attachment"
+                                            className="max-w-full h-auto max-h-[300px] object-cover block"
+                                            loading="lazy"
+                                        />
+                                    </div>
+                                ) : (
+                                    <a
+                                        href={attachmentUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 bg-black/20 p-2 rounded-lg hover:bg-black/40 transition-colors text-sm underline"
+                                    >
+                                        📎 Attachment
+                                    </a>
+                                )}
+                            </div>
+                        )}
+                        {content !== "Sent an attachment" && content}
 
                         <span className="text-[10px] opacity-50 block text-right mt-1">
                             {timestamp}

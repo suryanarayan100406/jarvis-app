@@ -12,6 +12,8 @@ export type Message = {
     reactions: Record<string, string[]> // { "🔥": ["user_id_1", "user_id_2"] }
     sender_name?: string
     is_own?: boolean
+    attachment_url?: string | null
+    attachment_type?: string | null
 }
 
 export function useChatMessages(channelId: string = 'global') {

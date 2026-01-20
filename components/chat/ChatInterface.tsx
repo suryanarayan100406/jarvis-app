@@ -28,6 +28,8 @@ export default function ChatInterface() {
     const [summary, setSummary] = useState<string | null>(null)
     const [isSummarizing, setIsSummarizing] = useState(false)
     const [showGroupInfo, setShowGroupInfo] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Auto-scroll to bottom
     const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -150,7 +152,9 @@ export default function ChatInterface() {
             inserted_at: new Date().toISOString(),
             reactions: {},
             sender_name: currentUser?.username || 'Me',
-            is_own: true
+            is_own: true,
+            attachment_url: null,
+            attachment_type: null
         })
 
         // 3. Insert into DB (passing the ID so it matches!)
@@ -166,6 +170,70 @@ export default function ChatInterface() {
         if (error) {
             console.error("Failed to send", error)
             alert("Error sending message: " + error.message) // Show RLS error
+        }
+    }
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("File size too large (Max 5MB)")
+            return
+        }
+
+        setIsUploading(true)
+        try {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${channelId}/${crypto.randomUUID()}.${fileExt}`
+
+            const { error: uploadError } = await supabase.storage
+                .from('chat-media')
+                .upload(fileName, file)
+
+            if (uploadError) throw uploadError
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('chat-media')
+                .getPublicUrl(fileName)
+
+            // Send Message with Attachment
+            const tempId = crypto.randomUUID()
+
+            // Optimistic Update
+            addMessage({
+                id: tempId,
+                content: "Sent an attachment",
+                user_id: currentUser?.id,
+                is_anonymous: false,
+                anonymous_alias: null,
+                inserted_at: new Date().toISOString(),
+                reactions: {},
+                sender_name: currentUser?.username || 'Me',
+                is_own: true,
+                attachment_url: publicUrl,
+                attachment_type: file.type
+            })
+
+            const { error: insertError } = await supabase.from('messages').insert({
+                id: tempId,
+                content: "Sent an attachment", // Required field
+                user_id: currentUser?.id,
+                channel_id: channelId,
+                is_anonymous: false,
+                anonymous_alias: null,
+                attachment_url: publicUrl,
+                attachment_type: file.type
+            })
+
+            if (insertError) throw insertError
+
+        } catch (e: any) {
+            console.error(e)
+            alert("Upload failed: " + e.message)
+        } finally {
+            setIsUploading(false)
+            if (fileInputRef.current) fileInputRef.current.value = ''
         }
     }
 
@@ -242,6 +310,7 @@ export default function ChatInterface() {
                             className={cn("w-12 h-12 border-2 border-white/10 shadow-lg", headerInfo.name === 'Global Chat' && "shadow-blue-500/20 border-blue-500/30")}
                         />
                         {chatType === 'dm' && <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>}
+                        <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
                     </div>
                     <div>
                         <h2 className="font-bold text-lg text-white tracking-tight flex items-center gap-2">
@@ -291,6 +360,9 @@ export default function ChatInterface() {
                                     reactions={msg.reactions}
                                     currentUserId={currentUser?.id}
                                     onReact={(id, emoji) => toggleReaction(id, currentUser?.id, emoji)}
+                                    // Media
+                                    attachmentUrl={msg.attachment_url}
+                                    attachmentType={msg.attachment_type}
                                 />
                             )
                         })}
@@ -326,9 +398,10 @@ export default function ChatInterface() {
                                 size="icon"
                                 variant="ghost"
                                 className="text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl transition-transform hover:scale-110"
-                                onClick={() => alert("Attachments coming soon!")}
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
                             >
-                                <Paperclip className="w-5 h-5" />
+                                {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                             </Button>
                             <Button
                                 type="submit"
