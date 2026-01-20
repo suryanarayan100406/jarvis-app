@@ -29,6 +29,10 @@ const REACTIONS = [
     { label: 'Delulu' }, // Delusional
     { label: 'Real' }, // Relatable
     { label: 'Bet' }, // Agreement
+    { label: 'Down bad' }, // Missing someone/Obsessed
+    { label: 'Pain' }, // Sadness
+    { label: 'In my feels' }, // Emotional
+    { label: 'Us?' }, // Nostalgic/Questioning
 ]
 
 export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact, attachmentUrl, attachmentType }: MessageProps) {
