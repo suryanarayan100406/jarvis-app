@@ -56,17 +56,27 @@ export function useChatMessages(channelId: string = 'global') {
                 schema: 'public',
                 table: 'messages',
                 filter: `channel_id=eq.${channelId}`
-            }, (payload) => {
+            }, async (payload) => {
                 const newMsg = payload.new as Message
+
+                // Fetch sender profile immediately
+                let senderName = '...'
+                if (!newMsg.is_anonymous && newMsg.user_id) {
+                    const { data } = await supabase.from('profiles').select('username').eq('id', newMsg.user_id).single()
+                    if (data) senderName = data.username
+                } else if (newMsg.is_anonymous) {
+                    senderName = newMsg.anonymous_alias || 'Anon'
+                }
+
                 setMessages((prev) => {
                     // Prevent duplicate if we already added it optimistically
                     if (prev.some(m => m.id === newMsg.id)) return prev
 
                     return [...prev, {
                         ...newMsg,
-                        sender_name: newMsg.is_anonymous ? (newMsg.anonymous_alias || 'Anon') : 'Someone',
+                        sender_name: senderName,
                         reactions: newMsg.reactions || {},
-                        is_own: true
+                        is_own: false // We calculate true owner in the UI component using currentUserID
                     }]
                 })
             })

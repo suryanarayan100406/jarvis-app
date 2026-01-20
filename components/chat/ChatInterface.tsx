@@ -173,12 +173,99 @@ export default function ChatInterface() {
         }
     }
 
+    const [isRecording, setIsRecording] = useState(false)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const chunksRef = useRef<Blob[]>([])
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            const mediaRecorder = new MediaRecorder(stream)
+            mediaRecorderRef.current = mediaRecorder
+            chunksRef.current = []
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunksRef.current.push(e.data)
+            }
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
+                await sendVoiceMessage(audioBlob)
+
+                // Stop all tracks
+                stream.getTracks().forEach(track => track.stop())
+            }
+
+            mediaRecorder.start()
+            setIsRecording(true)
+        } catch (err) {
+            console.error("Error accessing microphone:", err)
+            alert("Could not access microphone.")
+        }
+    }
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop()
+            setIsRecording(false)
+        }
+    }
+
+    const sendVoiceMessage = async (audioBlob: Blob) => {
+        if (!currentUser) return
+        setIsUploading(true)
+        try {
+            const fileName = `${channelId}/voice_${crypto.randomUUID()}.webm`
+            const { error: uploadError } = await supabase.storage
+                .from('chat-media')
+                .upload(fileName, audioBlob)
+
+            if (uploadError) throw uploadError
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('chat-media')
+                .getPublicUrl(fileName)
+
+            // Send Message
+            const tempId = crypto.randomUUID()
+            addMessage({
+                id: tempId,
+                content: "🎤 Voice Message",
+                user_id: currentUser.id,
+                is_anonymous: false,
+                anonymous_alias: null,
+                inserted_at: new Date().toISOString(),
+                reactions: {},
+                sender_name: currentUser.username || 'Me',
+                is_own: true,
+                attachment_url: publicUrl,
+                attachment_type: 'audio/webm'
+            })
+
+            await supabase.from('messages').insert({
+                id: tempId,
+                content: "🎤 Voice Message",
+                user_id: currentUser.id,
+                channel_id: channelId,
+                is_anonymous: false,
+                attachment_url: publicUrl,
+                attachment_type: 'audio/webm'
+            })
+
+        } catch (e: any) {
+            console.error(e)
+            alert("Failed to send voice: " + e.message)
+        } finally {
+            setIsUploading(false)
+        }
+    }
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
-        if (file.size > 5 * 1024 * 1024) {
-            alert("File size too large (Max 5MB)")
+        if (file.size > 50 * 1024 * 1024) { // Increased limit for videos/large files
+            alert("File size too large (Max 50MB)")
             return
         }
 
@@ -496,10 +583,20 @@ export default function ChatInterface() {
                                             <Button
                                                 type="button"
                                                 size="icon"
-                                                className="bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white rounded-full w-10 h-10 shadow-lg transition-all"
-                                                onClick={() => alert("Hold to Record Coming Soon!")}
+                                                className={cn(
+                                                    "rounded-full w-10 h-10 shadow-lg transition-all duration-200",
+                                                    isRecording
+                                                        ? "bg-red-500 text-white scale-110 shadow-red-500/50 animate-pulse"
+                                                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                                                )}
+                                                onMouseDown={startRecording}
+                                                onMouseUp={stopRecording}
+                                                onMouseLeave={stopRecording}
+                                                onTouchStart={startRecording}
+                                                onTouchEnd={stopRecording}
+                                                title="Hold to Record"
                                             >
-                                                <Mic className="w-5 h-5" />
+                                                <Mic className={cn("w-5 h-5", isRecording && "animate-bounce")} />
                                             </Button>
                                         </motion.div>
                                     )}
