@@ -31,7 +31,7 @@ const REACTIONS = [
     { label: 'Bet' }, // Agreement
 ]
 
-export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact }: MessageProps) {
+export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact, attachmentUrl, attachmentType }: MessageProps) {
     const [showReactions, setShowReactions] = useState(false)
 
     // Compute active reactions
