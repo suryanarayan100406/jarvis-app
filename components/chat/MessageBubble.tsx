@@ -31,6 +31,11 @@ const REACTIONS = [
     { id: 'skull', label: '💀' }, // Dead
     { id: 'clown', label: '🤡' }, // Clown
     { id: 'real', label: '💯' }, // Real
+    { id: 'moai', label: '🗿' }, // Chad/Stone
+    { id: 'salute', label: '🫡' }, // Respect
+    { id: 'love', label: '❤️' }, // Love
+    { id: 'fire', label: '🔥' }, // Lit
+    { id: 'sick', label: '🤮' }, // Disgust
 ]
 
 export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact, attachmentUrl, attachmentType }: MessageProps) {
@@ -69,6 +74,20 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                         </button>
                     </div>
                 )}
+
+                {/* Reaction Trigger Button (Inner Side) */}
+                <button
+                    className={cn(
+                        "opacity-0 group-hover:opacity-100 transition-all text-zinc-400 hover:text-yellow-400 p-2 rounded-full hover:bg-white/5 active:scale-95 mb-2",
+                        showReactions && "opacity-100 text-yellow-400"
+                    )}
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        setShowReactions(!showReactions)
+                    }}
+                >
+                    <Smile className="w-5 h-5" />
+                </button>
 
                 <div className="relative">
                     {/* Reaction Particles Effect */}
@@ -157,7 +176,7 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                         {showReactions && (
                             <motion.div
                                 initial={{ scale: 0, opacity: 0, x: isOwn ? 10 : -10 }}
-                                animate={{ scale: 1, opacity: 1, x: 0 }}
+                                animate={{ scale: 1, opacity: 1, x: 0 }} // Removed -45 offset
                                 exit={{ scale: 0, opacity: 0 }}
                                 className={cn(
                                     "absolute top-0 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-full p-1 flex gap-0.5 shadow-2xl z-50 items-center min-w-max",
@@ -169,34 +188,23 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                                         key={R.id}
                                         whileHover={{ scale: 1.2, y: -2 }}
                                         onClick={(e) => {
-                                            e.stopPropagation() // Prevent triggering parent clicks
+                                            e.stopPropagation()
                                             onReact?.(id, R.id)
                                             setShowReactions(false)
                                             setActiveReactionAnim(R.label)
                                         }}
-                                        className="p-1 px-2 rounded-full hover:bg-white/10 transition-colors relative text-lg" // Still readable but smaller
+                                        className="p-1 px-2 rounded-full hover:bg-white/10 transition-colors relative text-lg"
                                         title={R.label}
                                     >
                                         {R.label}
                                     </motion.button>
                                 ))}
                             </motion.div>
-
                         )}
                     </AnimatePresence>
                 </div>
-                {/* Reaction Trigger Button (Always Visible for better UX) */}
-                <button
-                    className="opacity-50 hover:opacity-100 transition-opacity text-zinc-400 hover:text-yellow-400 p-2 rounded-full hover:bg-white/5 active:scale-95"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        setShowReactions(!showReactions)
-                    }}
-                >
-                    <Smile className="w-5 h-5" />
-                </button>
 
             </div>
-        </motion.div >
+        </motion.div>
     )
 }
