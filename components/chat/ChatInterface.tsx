@@ -13,6 +13,8 @@ import { GroupInfoModal } from '@/components/chat/GroupInfoModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DEFAULT_USER_AVATAR, DEFAULT_GROUP_AVATAR, GLOBAL_CHAT_AVATAR } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import EmojiPicker, { Theme } from 'emoji-picker-react'
+
 
 export default function ChatInterface() {
     const searchParams = useSearchParams()
@@ -29,6 +31,7 @@ export default function ChatInterface() {
     const [isSummarizing, setIsSummarizing] = useState(false)
     const [showGroupInfo, setShowGroupInfo] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Auto-scroll to bottom
@@ -482,6 +485,33 @@ export default function ChatInterface() {
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                         >
+                            {/* Emoji Picker Popup */}
+                            <AnimatePresence>
+                                {showEmojiPicker && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                        className="absolute bottom-full left-0 mb-4 z-50"
+                                    >
+                                        <div className="shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-zinc-900">
+                                            <EmojiPicker
+                                                onEmojiClick={(e) => {
+                                                    setInputValue(prev => prev + e.emoji)
+                                                    // Optional: close picker? or keep open for multiple? Keep open.
+                                                }}
+                                                theme={Theme.DARK}
+                                                lazyLoadEmojis={true}
+                                                skinTonesDisabled
+                                                searchDisabled={false}
+                                                width={350}
+                                                height={400}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             {/* Left Side Tools */}
                             <div className="flex items-center gap-1 pl-2 pb-1">
                                 {/* Emoji Button */}
@@ -490,7 +520,7 @@ export default function ChatInterface() {
                                     size="icon"
                                     variant="ghost"
                                     className="text-zinc-400 hover:text-yellow-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors"
-                                    onClick={() => alert("Emoji Picker Coming Soon!")}
+                                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                 >
                                     <Smile className="w-5 h-5" />
                                 </Button>
