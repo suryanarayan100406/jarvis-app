@@ -21,14 +21,16 @@ interface MessageProps {
 }
 
 // Custom Image Reactions
+// Custom Image Reactions
 // Extended Emoji List (Gen Z + Standard)
+// We use the Emoji Character ITSELF as the ID to ensure cross-client consistency and simpler logic.
 const QUICK_REACTIONS = [
-    { id: 'cry_pray', label: '😭🙏' }, // The Classic
-    { id: 'skull', label: '💀' },      // Dead
-    { id: 'heart', label: '❤️' },      // Love
-    { id: 'baddie', label: '💅✨' },   // Slay
-    { id: 'moai', label: '🗿' },       // Chad
-    { id: 'clown', label: '🤡' },      // Clown behavior
+    { id: '😭🙏', label: '😭🙏' }, // The Classic
+    { id: '💀', label: '💀' },      // Dead
+    { id: '❤️', label: '❤️' },      // Love
+    { id: '💅✨', label: '💅✨' },   // Slay
+    { id: '🗿', label: '🗿' },       // Chad
+    { id: '🤡', label: '🤡' },      // Clown behavior
 ]
 
 const ALL_EMOJIS = [
@@ -53,7 +55,7 @@ const ALL_EMOJIS = [
 
 export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact, attachmentUrl, attachmentType }: MessageProps) {
     const [showReactions, setShowReactions] = useState(false)
-    const [isExpanded, setIsExpanded] = useState(false) // For viewing all emojis
+    const [isExpanded, setIsExpanded] = useState(false)
     const [activeReactionAnim, setActiveReactionAnim] = useState<string | null>(null)
 
     // Reset expanded state when closing
@@ -63,12 +65,13 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
 
     // Compute active reactions
     const displayedReactions = Object.entries(reactions).map(([reactionId, userIds]) => {
+        // reactionId IS the emoji now. No lookup needed.
         return {
             id: reactionId,
-            emoji: reactionId, // ID is the emoji itself now usually
+            emoji: reactionId,
             count: userIds.length,
             hasReacted: currentUserId ? userIds.includes(currentUserId) : false,
-            userIds: userIds // Store for "Who Reacted"
+            userIds: userIds
         }
     }).filter(r => r.count > 0)
 
