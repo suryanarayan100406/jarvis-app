@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
-import { Smile, ThumbsUp, Heart, Flame, Zap, Trash2 } from 'lucide-react'
+import { Smile, ThumbsUp, Heart, Flame, Zap, Trash2, Mic } from 'lucide-react'
 import { ReactionParticles } from './ReactionParticles'
 
 interface MessageProps {
@@ -147,24 +147,35 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                     >
                         {attachmentUrl && (
                             <div className="mb-2">
-                                {attachmentType?.startsWith('image/') ? (
-                                    <div className="rounded-lg overflow-hidden border border-white/10 relative">
-                                        <img
-                                            src={attachmentUrl}
-                                            alt="attachment"
-                                            className="max-w-full h-auto max-h-[300px] object-cover block"
-                                            loading="lazy"
-                                        />
+                                <div className="rounded-lg overflow-hidden border border-white/10 relative">
+                                    <img
+                                        src={attachmentUrl}
+                                        alt="attachment"
+                                        className="max-w-full h-auto max-h-[300px] object-cover block"
+                                        loading="lazy"
+                                    />
+                                </div>
+                                ) : attachmentType?.startsWith('audio/') ? (
+                                <div className="flex items-center gap-2 bg-zinc-800/50 p-3 rounded-xl border border-white/5 min-w-[200px]">
+                                    <div className="bg-purple-500/20 p-2 rounded-full">
+                                        <Mic className="w-4 h-4 text-purple-400" />
                                     </div>
+                                    <audio
+                                        controls
+                                        src={attachmentUrl}
+                                        className="h-8 max-w-[200px] w-full"
+                                        controlsList="nodownload noplaybackrate"
+                                    />
+                                </div>
                                 ) : (
-                                    <a
-                                        href={attachmentUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 bg-black/20 p-2 rounded-lg hover:bg-black/40 transition-colors text-sm underline"
-                                    >
-                                        📎 Attachment
-                                    </a>
+                                <a
+                                    href={attachmentUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-black/20 p-2 rounded-lg hover:bg-black/40 transition-colors text-sm underline"
+                                >
+                                    📎 Attachment
+                                </a>
                                 )}
                             </div>
                         )}
