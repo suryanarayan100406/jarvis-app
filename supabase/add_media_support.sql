@@ -1,6 +1,6 @@
--- 1. Add columns to messages table
+-- 1. Add columns to messages table (Safe to re-run)
 alter table public.messages add column if not exists attachment_url text;
-alter table public.messages add column if not exists attachment_type text; -- 'image/png', 'video/mp4', 'file', etc.
+alter table public.messages add column if not exists attachment_type text;
 
 -- 2. Create Storage Bucket (chat-media)
 -- Note: 'storage.buckets' is a system table managed by Supabase Storage
@@ -9,8 +9,14 @@ values ('chat-media', 'chat-media', true)
 on conflict (id) do nothing;
 
 -- 3. Storage Policies
--- Enable RLS on objects if not already (it usually is)
-alter table storage.objects enable row level security;
+
+-- IMPORTANT: We removed the "alter table storage.objects enable row level security" 
+-- because it causes permission errors (42501) and is usually enabled by default.
+
+-- Drop existing policies first to allow safe re-running of this script
+drop policy if exists "Authenticated users can upload chat media" on storage.objects;
+drop policy if exists "Anyone can read chat media" on storage.objects;
+drop policy if exists "Users can delete their own media" on storage.objects;
 
 -- Policy: Authenticated users can upload media
 create policy "Authenticated users can upload chat media"
@@ -24,7 +30,7 @@ on storage.objects for select
 to public
 using ( bucket_id = 'chat-media' );
 
--- Policy: Users can delete their own media (Optional but good)
+-- Policy: Users can delete their own media
 create policy "Users can delete their own media"
 on storage.objects for delete
 to authenticated
