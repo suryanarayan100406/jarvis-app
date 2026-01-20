@@ -181,37 +181,22 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                                     </motion.button>
                                 ))}
                             </motion.div>
-                                {REACTIONS.map((R) => (
-                                <motion.button
-                                    key={R.id}
-                                    whileHover={{ scale: 1.2, y: -2 }}
-                                    onClick={() => {
-                                        onReact?.(id, R.id)
-                                        setShowReactions(false)
-                                        setActiveReactionAnim(R.label)
-                                    }}
-                                    className="p-1.5 rounded-full hover:bg-white/10 transition-colors relative text-xl"
-                                    title={R.label}
-                                >
-                                    {R.label}
-                                </motion.button>
-                            ))}
-                    </motion.div>
-                        )}
-                </AnimatePresence>
-            </div>
-            {/* Reaction Trigger Button (Always Visible for better UX) */}
-            <button
-                className="opacity-50 hover:opacity-100 transition-opacity text-zinc-400 hover:text-yellow-400 p-2 rounded-full hover:bg-white/5 active:scale-95"
-                onClick={(e) => {
-                    e.stopPropagation()
-                    setShowReactions(!showReactions)
-                }}
-            >
-                <Smile className="w-5 h-5" />
-            </button>
 
-        </div>
+                        )}
+                    </AnimatePresence>
+                </div>
+                {/* Reaction Trigger Button (Always Visible for better UX) */}
+                <button
+                    className="opacity-50 hover:opacity-100 transition-opacity text-zinc-400 hover:text-yellow-400 p-2 rounded-full hover:bg-white/5 active:scale-95"
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        setShowReactions(!showReactions)
+                    }}
+                >
+                    <Smile className="w-5 h-5" />
+                </button>
+
+            </div>
         </motion.div >
     )
 }
