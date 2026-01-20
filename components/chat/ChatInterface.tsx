@@ -379,8 +379,9 @@ export default function ChatInterface() {
 
             {/* Footer Input Area */}
             {/* Footer Input Area (Floating & Clean) */}
-            <div className="absolute bottom-6 left-0 right-0 px-4 md:px-0 flex justify-center z-20 pointer-events-none">
-                <div className="w-full max-w-3xl pointer-events-auto">
+            {/* Footer Input Area (Clean & Stable) */}
+            <div className="p-4 pb-6 flex justify-center shrink-0 relative z-20">
+                <div className="w-full max-w-4xl">
                     {!canSend ? (
                         <div className="w-full py-4 px-6 rounded-2xl bg-red-500/10 border border-red-500/20 backdrop-blur-md flex items-center justify-center gap-2 text-red-200 font-medium animate-in fade-in slide-in-from-bottom-4">
                             <Shield className="w-4 h-4" />
@@ -389,7 +390,7 @@ export default function ChatInterface() {
                     ) : (
                         <motion.form
                             onSubmit={handleSendMessage}
-                            className="relative flex items-center gap-2 bg-zinc-900/80 backdrop-blur-xl p-2 pl-6 rounded-[2rem] border border-white/10 shadow-2xl shadow-purple-900/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500/50 focus-within:shadow-purple-500/10"
+                            className="relative flex items-end gap-2 bg-zinc-900/80 backdrop-blur-xl p-2 pl-6 rounded-[1.5rem] border border-white/10 shadow-2xl shadow-purple-900/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500/50 focus-within:shadow-purple-500/10"
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                         >
@@ -397,10 +398,11 @@ export default function ChatInterface() {
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 placeholder={`Message ${chatType === 'group' ? headerInfo.name : '@' + headerInfo.name}...`}
-                                className="bg-transparent border-none text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 text-base py-6 flex-1 min-w-0"
+                                className="bg-transparent border-none text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px] max-h-[120px] py-3 flex-1 min-w-0 resize-none overflow-hidden"
+                                autoComplete="off"
                             />
 
-                            <div className="flex items-center gap-2 pr-1">
+                            <div className="flex items-center gap-2 pr-1 pb-1">
                                 <Button
                                     type="button"
                                     size="icon"
@@ -413,7 +415,7 @@ export default function ChatInterface() {
                                 </Button>
 
                                 <AnimatePresence>
-                                    {inputValue.trim() && (
+                                    {inputValue.trim() ? (
                                         <motion.div
                                             initial={{ scale: 0, opacity: 0, width: 0 }}
                                             animate={{ scale: 1, opacity: 1, width: 'auto' }}
@@ -429,6 +431,9 @@ export default function ChatInterface() {
                                                 <Send className="w-4 h-4 ml-0.5" />
                                             </Button>
                                         </motion.div>
+                                    ) : (
+                                        // Optional: Mic button when empty (WhatsApp style) - keeping placeholder for now
+                                        <div className="w-0" />
                                     )}
                                 </AnimatePresence>
                             </div>
