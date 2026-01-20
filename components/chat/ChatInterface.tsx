@@ -32,7 +32,85 @@ export default function ChatInterface() {
     const [showGroupInfo, setShowGroupInfo] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+    const [showCamera, setShowCamera] = useState(false)
+    const videoRef = useRef<HTMLVideoElement>(null)
+    const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const startCamera = async () => {
+        try {
+            setShowCamera(true)
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            setCameraStream(stream)
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream
+            }
+        } catch (err) {
+            console.error("Camera error:", err)
+            alert("Could not access camera.")
+            setShowCamera(false)
+        }
+    }
+
+    const stopCamera = () => {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop())
+            setCameraStream(null)
+        }
+        setShowCamera(false)
+    }
+
+    const capturePhoto = () => {
+        if (videoRef.current) {
+            const canvas = document.createElement('canvas')
+            canvas.width = videoRef.current.videoWidth
+            canvas.height = videoRef.current.videoHeight
+            const ctx = canvas.getContext('2d')
+            if (ctx) {
+                ctx.drawImage(videoRef.current, 0, 0)
+                canvas.toBlob(async (blob) => {
+                    if (blob) {
+                        const file = new File([blob], "photo.jpg", { type: "image/jpeg" })
+                        stopCamera()
+
+                        // Upload Logic Re-use (simulating event or calling logic)
+                        // Easier to just duplicate upload logic for Blob or Extract upload logic.
+                        // I will just call handleFileUpload logic manually or create specific one.
+                        // I'll create a quick helper `uploadFile(file)`
+                        await uploadFile(file)
+                    }
+                }, 'image/jpeg')
+            }
+        }
+    }
+
+    const uploadFile = async (file: File) => {
+        if (!currentUser) return
+        setIsUploading(true)
+        try {
+            const fileExt = file.name.split('.').pop() || 'jpg'
+            const fileName = `${channelId}/${crypto.randomUUID()}.${fileExt}`
+            const { error: uploadError } = await supabase.storage.from('chat-media').upload(fileName, file)
+            if (uploadError) throw uploadError
+            const { data: { publicUrl } } = supabase.storage.from('chat-media').getPublicUrl(fileName)
+
+            const tempId = crypto.randomUUID()
+            // Optimistic Update
+            addMessage({
+                id: tempId, content: "Sent a photo", user_id: currentUser.id, is_anonymous: false, anonymous_alias: null,
+                inserted_at: new Date().toISOString(), reactions: {}, sender_name: currentUser.username || 'Me', is_own: true,
+                attachment_url: publicUrl, attachment_type: file.type
+            })
+            await supabase.from('messages').insert({
+                id: tempId, content: "Sent a photo", user_id: currentUser.id, channel_id: channelId, is_anonymous: false,
+                attachment_url: publicUrl, attachment_type: file.type
+            })
+        } catch (e: any) {
+            alert("Upload failed: " + e.message)
+        } finally {
+            setIsUploading(false)
+        }
+    }
 
     // Auto-scroll to bottom
     const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -531,13 +609,7 @@ export default function ChatInterface() {
                                     size="icon"
                                     variant="ghost"
                                     className="text-zinc-400 hover:text-blue-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors"
-                                    onClick={() => {
-                                        if (fileInputRef.current) {
-                                            fileInputRef.current.accept = "image/*"
-                                            fileInputRef.current.capture = "environment"
-                                            fileInputRef.current.click()
-                                        }
-                                    }}
+                                    onClick={startCamera}
                                 >
                                     <Camera className="w-5 h-5" />
                                 </Button>
@@ -643,6 +715,38 @@ export default function ChatInterface() {
             </div>
 
             {/* Modals */}
+            {/* Camera Modal */}
+            <AnimatePresence>
+                {showCamera && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-4"
+                    >
+                        <div className="relative w-full max-w-sm aspect-[3/4] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+                            {/* Video Feed */}
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                className="w-full h-full object-cover"
+                            />
+
+                            {/* Overlay Controls */}
+                            <div className="absolute inset-x-0 bottom-0 p-8 flex justify-between items-center bg-gradient-to-t from-black/80 to-transparent">
+                                <Button variant="ghost" size="icon" className="text-white rounded-full bg-white/10 w-12 h-12" onClick={stopCamera}>
+                                    ✕
+                                </Button>
+                                <button
+                                    onClick={capturePhoto}
+                                    className="w-20 h-20 rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-all active:scale-95"
+                                />
+                                <div className="w-12" /> {/* Spacer */}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {
                 showGroupInfo && (
                     <GroupInfoModal
