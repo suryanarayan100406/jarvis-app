@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Smile, ThumbsUp, Heart, Flame, Zap, Trash2 } from 'lucide-react'
+import { ReactionParticles } from './ReactionParticles'
 
 interface MessageProps {
     id: string
@@ -37,6 +38,7 @@ const REACTIONS = [
 
 export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact, attachmentUrl, attachmentType }: MessageProps) {
     const [showReactions, setShowReactions] = useState(false)
+    const [activeReactionAnim, setActiveReactionAnim] = useState<string | null>(null)
 
     // Compute active reactions
     // Should be an array of { emoji: '🔥', count: 3, hasReacted: true }
@@ -69,6 +71,13 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                 )}
 
                 <div className="relative">
+                    {activeReactionAnim && (
+                        <ReactionParticles
+                            emoji={activeReactionAnim}
+                            onComplete={() => setActiveReactionAnim(null)}
+                        />
+                    )}
+
                     {/* Sender Name */}
                     {!isOwn && (
                         <span className="text-xs text-muted-foreground ml-2 mb-1 block">
@@ -157,6 +166,7 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                                         onClick={() => {
                                             onReact?.(id, R.label)
                                             setShowReactions(false)
+                                            setActiveReactionAnim(R.label) // Trigger Anim
                                         }}
                                         className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-lg"
                                         title={R.label}
