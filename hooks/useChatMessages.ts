@@ -111,13 +111,22 @@ export function useChatMessages(channelId: string = 'global') {
 
         let newReactions = { ...currentReactions }
 
-        if (userList.includes(userId)) {
-            // Remove reaction
-            newReactions[emoji] = userList.filter(id => id !== userId)
-            if (newReactions[emoji].length === 0) delete newReactions[emoji] // Clean up empty keys
-        } else {
-            // Add reaction
-            newReactions[emoji] = [...userList, userId]
+        // Enforce Single Reaction Per User Rule
+        // 1. Remove user from ALL lists first
+        let previousReactionEmoji: string | null = null
+
+        Object.keys(newReactions).forEach(key => {
+            if (newReactions[key].includes(userId)) {
+                previousReactionEmoji = key
+                newReactions[key] = newReactions[key].filter(id => id !== userId)
+                if (newReactions[key].length === 0) delete newReactions[key]
+            }
+        })
+
+        // 2. If the clicked emoji is DIFFERENT from what they had, OR they had nothing, add it.
+        // (If they clicked the same one, we leave it removed -> Toggled Off)
+        if (previousReactionEmoji !== emoji) {
+            newReactions[emoji] = [...(newReactions[emoji] || []), userId]
         }
 
         // 2. Optimistic Update

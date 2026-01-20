@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { Smile, ThumbsUp, Heart, Flame, Zap, Trash2 } from 'lucide-react'
 import { ReactionParticles } from './ReactionParticles'
@@ -21,37 +21,59 @@ interface MessageProps {
 }
 
 // Custom Image Reactions
-// Gen Z / Vibe Reaction Set
-const REACTIONS = [
-    { id: 'cry_pray', label: '😭🙏' }, // Praying/Crying
-    { id: 'baddie', label: '💅✨' }, // Baddie
-    { id: 'lashes', label: '👁️👄👁️' }, // Lashes/Shock
-    { id: 'fist_cry', label: '✊😔' }, // Crying Fist/Pain
-    { id: 'down_bad', label: '📉' }, // Down bad/Sobbing
-    { id: 'skull', label: '💀' }, // Dead
-    { id: 'clown', label: '🤡' }, // Clown
-    { id: 'real', label: '💯' }, // Real
-    { id: 'moai', label: '🗿' }, // Chad/Stone
-    { id: 'salute', label: '🫡' }, // Respect
-    { id: 'love', label: '❤️' }, // Love
-    { id: 'fire', label: '🔥' }, // Lit
-    { id: 'sick', label: '🤮' }, // Disgust
+// Extended Emoji List (Gen Z + Standard)
+const QUICK_REACTIONS = [
+    { id: 'heart', label: '❤️' },
+    { id: 'laugh', label: '😂' },
+    { id: 'fire', label: '🔥' },
+    { id: 'cry_pray', label: '😭' },
+    { id: 'thumbs_up', label: '👍' },
+    { id: 'skull', label: '💀' }, // Top 6
+]
+
+const ALL_EMOJIS = [
+    '❤️', '😂', '🔥', '😭', '👍', '💀', '🗿', '👀', '🙌', '💯',
+    '🤡', '🤮', '🎉', '💩', '🤯', '🫡', '🤔', '🫣', '💅', '🚀',
+    '🤬', '🤪', '😇', '🤫', '🤥', '😷', '🤒', '🤕', '🤢', '🤧',
+    '🥳', '🥴', '🥺', '🤠', '🥸', '😎', '🤓', '🧐', '😕', '😟',
+    '🙁', '☹️', '😮', '😯', '😲', '😳', '🥵', '🥶', '😱', '😨',
+    '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐',
+    '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴',
+    '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒',
+    '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻',
+    '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻',
+    '😼', '😽', '🙀', '😿', '😾', '👋', '🤚', '🖐️', '✋', '🖖',
+    '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉',
+    '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜',
+    '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪',
 ]
 
 export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact, attachmentUrl, attachmentType }: MessageProps) {
     const [showReactions, setShowReactions] = useState(false)
+    const [isExpanded, setIsExpanded] = useState(false) // For viewing all emojis
     const [activeReactionAnim, setActiveReactionAnim] = useState<string | null>(null)
+
+    // Reset expanded state when closing
+    useEffect(() => {
+        if (!showReactions) setIsExpanded(false)
+    }, [showReactions])
 
     // Compute active reactions
     const displayedReactions = Object.entries(reactions).map(([reactionId, userIds]) => {
-        const reactionDef = REACTIONS.find(r => r.id === reactionId)
         return {
             id: reactionId,
-            emoji: reactionDef?.label || reactionId, // Fallback
+            emoji: reactionId, // ID is the emoji itself now usually
             count: userIds.length,
-            hasReacted: currentUserId ? userIds.includes(currentUserId) : false
+            hasReacted: currentUserId ? userIds.includes(currentUserId) : false,
+            userIds: userIds // Store for "Who Reacted"
         }
     }).filter(r => r.count > 0)
+
+    const toggleEmoji = (emoji: string) => {
+        onReact?.(id, emoji)
+        setShowReactions(false)
+        setActiveReactionAnim(emoji)
+    }
 
     return (
         <motion.div
@@ -94,7 +116,7 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                     {activeReactionAnim && (
                         <ReactionParticles
                             emoji={activeReactionAnim}
-                            isImage={false} // Switch back to False (text emojis)
+                            isImage={false}
                             onComplete={() => setActiveReactionAnim(null)}
                         />
                     )}
@@ -150,22 +172,27 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                         {displayedReactions.length > 0 && (
                             <div className={cn("absolute -bottom-5 flex gap-1 flex-wrap min-w-[100px] z-10", isOwn ? "right-0 justify-end" : "left-0 justify-start")}>
                                 {displayedReactions.map((r) => (
-                                    <button
-                                        key={r.id}
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            onReact?.(id, r.id)
-                                        }}
-                                        className={cn(
-                                            "text-[10px] px-1.5 py-0.5 rounded-full border flex items-center gap-1 transition-all shadow-sm",
-                                            r.hasReacted
-                                                ? "bg-purple-500/20 border-purple-500 text-purple-200"
-                                                : "bg-zinc-800 border-white/10 text-zinc-400 hover:bg-zinc-700"
-                                        )}
-                                    >
-                                        <span>{r.emoji}</span>
-                                        <span className="font-bold">{r.count}</span>
-                                    </button>
+                                    <div key={r.id} className="group/reaction relative">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                onReact?.(id, r.id)
+                                            }}
+                                            className={cn(
+                                                "text-[10px] px-1.5 py-0.5 rounded-full border flex items-center gap-1 transition-all shadow-sm",
+                                                r.hasReacted
+                                                    ? "bg-purple-500/20 border-purple-500 text-purple-200"
+                                                    : "bg-zinc-800 border-white/10 text-zinc-400 hover:bg-zinc-700"
+                                            )}
+                                        >
+                                            <span>{r.emoji}</span>
+                                            <span className="font-bold">{r.count}</span>
+                                        </button>
+                                        {/* Who Reacted Tooltip */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/reaction:block bg-black/90 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 pointer-events-none">
+                                            {r.count} people reacted
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -176,29 +203,58 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                         {showReactions && (
                             <motion.div
                                 initial={{ scale: 0, opacity: 0, x: isOwn ? 10 : -10 }}
-                                animate={{ scale: 1, opacity: 1, x: 0 }} // Removed -45 offset
+                                animate={{ scale: 1, opacity: 1, x: 0 }}
                                 exit={{ scale: 0, opacity: 0 }}
                                 className={cn(
-                                    "absolute top-0 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-full p-1 flex gap-0.5 shadow-2xl z-50 items-center min-w-max",
-                                    isOwn ? "right-full mr-2" : "left-full ml-2"
+                                    "absolute top-0 bg-zinc-900/95 backdrop-blur-xl border border-white/10 p-1 flex shadow-2xl z-50 items-center min-w-max",
+                                    isOwn ? "right-full mr-2" : "left-full ml-2",
+                                    isExpanded ? "rounded-2xl grid grid-cols-8 gap-1 w-[240px] max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20" : "rounded-full gap-0.5"
                                 )}
                             >
-                                {REACTIONS.map((R) => (
-                                    <motion.button
-                                        key={R.id}
-                                        whileHover={{ scale: 1.2, y: -2 }}
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            onReact?.(id, R.id)
-                                            setShowReactions(false)
-                                            setActiveReactionAnim(R.label)
-                                        }}
-                                        className="p-1 px-2 rounded-full hover:bg-white/10 transition-colors relative text-lg"
-                                        title={R.label}
-                                    >
-                                        {R.label}
-                                    </motion.button>
-                                ))}
+                                {!isExpanded ? (
+                                    <>
+                                        {QUICK_REACTIONS.map((R) => (
+                                            <motion.button
+                                                key={R.id}
+                                                whileHover={{ scale: 1.2, y: -2 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    toggleEmoji(R.label)
+                                                }}
+                                                className="p-1 px-2 rounded-full hover:bg-white/10 transition-colors relative text-lg"
+                                                title={R.id}
+                                            >
+                                                {R.label}
+                                            </motion.button>
+                                        ))}
+                                        {/* Plus Button */}
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                setIsExpanded(true)
+                                            }}
+                                            className="p-1 px-2 rounded-full hover:bg-white/10 transition-colors relative text-lg text-zinc-400 hover:text-white"
+                                        >
+                                            +
+                                        </motion.button>
+                                    </>
+                                ) : (
+                                    // Expanded Grid
+                                    ALL_EMOJIS.map((emoji, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                toggleEmoji(emoji)
+                                            }}
+                                            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-lg flex items-center justify-center hover:scale-110 active:scale-95"
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))
+                                )}
+
                             </motion.div>
                         )}
                     </AnimatePresence>
