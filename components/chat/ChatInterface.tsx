@@ -257,6 +257,7 @@ export default function ChatInterface() {
     const [isRecording, setIsRecording] = useState(false)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const chunksRef = useRef<Blob[]>([])
+    const isRecordingWantedRef = useRef(false)
 
     const startRecording = async () => {
         try {
