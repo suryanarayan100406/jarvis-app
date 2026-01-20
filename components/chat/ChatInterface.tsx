@@ -380,6 +380,7 @@ export default function ChatInterface() {
             {/* Footer Input Area */}
             {/* Footer Input Area (Floating & Clean) */}
             {/* Footer Input Area (Clean & Stable) */}
+            {/* Footer Input Area (Clean & Stable) */}
             <div className="p-4 pb-6 flex justify-center shrink-0 relative z-20">
                 <div className="w-full max-w-4xl">
                     {!canSend ? (
@@ -390,50 +391,117 @@ export default function ChatInterface() {
                     ) : (
                         <motion.form
                             onSubmit={handleSendMessage}
-                            className="relative flex items-end gap-2 bg-zinc-900/80 backdrop-blur-xl p-2 pl-6 rounded-[1.5rem] border border-white/10 shadow-2xl shadow-purple-900/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500/50 focus-within:shadow-purple-500/10"
+                            className="relative flex items-end gap-2 bg-zinc-900/80 backdrop-blur-xl p-2 rounded-[1.5rem] border border-white/10 shadow-2xl shadow-purple-900/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500/50 focus-within:shadow-purple-500/10"
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                         >
-                            <Input
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                placeholder={`Message ${chatType === 'group' ? headerInfo.name : '@' + headerInfo.name}...`}
-                                className="bg-transparent border-none text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px] max-h-[120px] py-3 flex-1 min-w-0 resize-none overflow-hidden"
-                                autoComplete="off"
-                            />
-
-                            <div className="flex items-center gap-2 pr-1 pb-1">
+                            {/* Left Side Tools */}
+                            <div className="flex items-center gap-1 pl-2 pb-1">
+                                {/* Emoji Button */}
                                 <Button
                                     type="button"
                                     size="icon"
                                     variant="ghost"
-                                    className="text-zinc-400 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 transition-transform active:scale-90"
-                                    onClick={() => fileInputRef.current?.click()}
+                                    className="text-zinc-400 hover:text-yellow-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors"
+                                    onClick={() => alert("Emoji Picker Coming Soon!")}
+                                >
+                                    <Smile className="w-5 h-5" />
+                                </Button>
+
+                                {/* Camera Button */}
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="text-zinc-400 hover:text-blue-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors"
+                                    onClick={() => {
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.accept = "image/*"
+                                            fileInputRef.current.capture = "environment"
+                                            fileInputRef.current.click()
+                                        }
+                                    }}
+                                >
+                                    <Camera className="w-5 h-5" />
+                                </Button>
+
+                                {/* Attachment Button */}
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="text-zinc-400 hover:text-purple-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors"
+                                    onClick={() => {
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.accept = "*/*"
+                                            fileInputRef.current.capture = "" // Reset capture
+                                            fileInputRef.current.click()
+                                        }
+                                    }}
                                     disabled={isUploading}
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                                 </Button>
+                            </div>
 
-                                <AnimatePresence>
+                            {/* Input Field */}
+                            <Input
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder={`Message...`}
+                                className="bg-transparent border-none text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px] max-h-[120px] py-3 flex-1 min-w-0 resize-none overflow-hidden"
+                                autoComplete="off"
+                            />
+
+                            {/* Right Side Actions */}
+                            <div className="flex items-center gap-2 pr-2 pb-1">
+                                {/* Text Magic/Effects */}
+                                {inputValue.trim() && (
+                                    <Button
+                                        type="button"
+                                        size="icon"
+                                        variant="ghost"
+                                        className="text-zinc-400 hover:text-pink-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors"
+                                        onClick={() => alert("Text FX Coming Soon!")}
+                                    >
+                                        <Sparkles className="w-5 h-5" />
+                                    </Button>
+                                )}
+
+                                <AnimatePresence mode="wait">
                                     {inputValue.trim() ? (
                                         <motion.div
-                                            initial={{ scale: 0, opacity: 0, width: 0 }}
-                                            animate={{ scale: 1, opacity: 1, width: 'auto' }}
-                                            exit={{ scale: 0, opacity: 0, width: 0 }}
+                                            key="send"
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            exit={{ scale: 0 }}
                                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                         >
                                             <Button
                                                 type="submit"
                                                 size="icon"
-                                                className="bg-zinc-100 text-black hover:bg-white rounded-full w-10 h-10 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
-                                                disabled={!inputValue.trim()}
+                                                className="bg-purple-600 text-white hover:bg-purple-700 rounded-full w-10 h-10 shadow-lg hover:shadow-purple-500/20 hover:scale-105 active:scale-95 transition-all"
                                             >
                                                 <Send className="w-4 h-4 ml-0.5" />
                                             </Button>
                                         </motion.div>
                                     ) : (
-                                        // Optional: Mic button when empty (WhatsApp style) - keeping placeholder for now
-                                        <div className="w-0" />
+                                        <motion.div
+                                            key="mic"
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            exit={{ scale: 0 }}
+                                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                        >
+                                            <Button
+                                                type="button"
+                                                size="icon"
+                                                className="bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white rounded-full w-10 h-10 shadow-lg transition-all"
+                                                onClick={() => alert("Hold to Record Coming Soon!")}
+                                            >
+                                                <Mic className="w-5 h-5" />
+                                            </Button>
+                                        </motion.div>
                                     )}
                                 </AnimatePresence>
                             </div>
