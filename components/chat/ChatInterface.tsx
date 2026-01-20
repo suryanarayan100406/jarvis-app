@@ -621,9 +621,14 @@ export default function ChatInterface() {
                                                 )}
                                                 onMouseDown={startRecording}
                                                 onMouseUp={stopRecording}
-                                                onMouseLeave={stopRecording}
-                                                onTouchStart={startRecording}
-                                                onTouchEnd={stopRecording}
+                                                onTouchStart={(e) => {
+                                                    e.preventDefault() // Prevent ghost clicks
+                                                    startRecording()
+                                                }}
+                                                onTouchEnd={(e) => {
+                                                    e.preventDefault()
+                                                    stopRecording()
+                                                }}
                                                 title="Hold to Record"
                                             >
                                                 <Mic className={cn("w-5 h-5", isRecording && "animate-bounce")} />
