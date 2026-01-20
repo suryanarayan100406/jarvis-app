@@ -157,24 +157,24 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                         {showReactions && (
                             <motion.div
                                 initial={{ scale: 0, opacity: 0, y: 10 }}
-                                animate={{ scale: 1, opacity: 1, y: -45 }}
+                                animate={{ scale: 1, opacity: 1, y: -5 }}
                                 exit={{ scale: 0, opacity: 0 }}
                                 className={cn(
-                                    "absolute bottom-full bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 flex gap-2 shadow-2xl z-50 mb-2 items-center min-w-max",
+                                    "absolute bottom-full bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-full p-1.5 flex gap-1 shadow-2xl z-50 mb-1 items-center min-w-max",
                                     isOwn ? "right-0" : "left-0"
                                 )}
                             >
                                 {REACTIONS.map((R) => (
                                     <motion.button
                                         key={R.id}
-                                        whileHover={{ scale: 1.2, y: -5 }}
+                                        whileHover={{ scale: 1.2, y: -2 }}
                                         onClick={() => {
                                             onReact?.(id, R.id)
                                             setShowReactions(false)
-                                            setActiveReactionAnim(R.label) // Pass Emoji Text
+                                            setActiveReactionAnim(R.label)
                                         }}
-                                        className="p-2 rounded-xl hover:bg-white/10 transition-colors relative text-2xl"
-                                        title={R.id}
+                                        className="p-1.5 rounded-full hover:bg-white/10 transition-colors relative text-xl"
+                                        title={R.label}
                                     >
                                         {R.label}
                                     </motion.button>
