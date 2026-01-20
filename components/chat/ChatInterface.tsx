@@ -378,42 +378,63 @@ export default function ChatInterface() {
             </div>
 
             {/* Footer Input Area */}
-            <div className="h-24 px-8 flex items-center shrink-0 backdrop-blur-md bg-white/5 rounded-b-3xl border-t border-white/5 relative z-20">
-                {!canSend ? (
-                    <div className="w-full py-4 px-6 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center gap-2 text-red-200 font-medium animate-in fade-in slide-in-from-bottom-4">
-                        <Shield className="w-4 h-4" />
-                        <span>Sending messages has been disabled by admins.</span>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-4 bg-black/40 p-2 pl-6 rounded-2xl border border-white/10 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all shadow-lg group">
-                        <Input
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            placeholder={chatType === 'group' ? `Message ${headerInfo.name}...` : `Message @${headerInfo.name}...`}
-                            className="bg-transparent border-none text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 text-base"
-                        />
-                        <div className="flex items-center gap-1 pr-2">
-                            < Button
-                                type="button"
-                                size="icon"
-                                variant="ghost"
-                                className="text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl transition-transform hover:scale-110"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploading}
-                            >
-                                {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
-                            </Button>
-                            <Button
-                                type="submit"
-                                size="icon"
-                                className="bg-gradient-to-tr from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/50 hover:scale-105 active:scale-95 transition-all duration-300 w-10 h-10"
-                                disabled={!inputValue.trim()}
-                            >
-                                <Send className="w-4 h-4" />
-                            </Button>
+            {/* Footer Input Area (Floating & Clean) */}
+            <div className="absolute bottom-6 left-0 right-0 px-4 md:px-0 flex justify-center z-20 pointer-events-none">
+                <div className="w-full max-w-3xl pointer-events-auto">
+                    {!canSend ? (
+                        <div className="w-full py-4 px-6 rounded-2xl bg-red-500/10 border border-red-500/20 backdrop-blur-md flex items-center justify-center gap-2 text-red-200 font-medium animate-in fade-in slide-in-from-bottom-4">
+                            <Shield className="w-4 h-4" />
+                            <span>Sending messages has been disabled by admins.</span>
                         </div>
-                    </form>
-                )}
+                    ) : (
+                        <motion.form
+                            onSubmit={handleSendMessage}
+                            className="relative flex items-center gap-2 bg-zinc-900/80 backdrop-blur-xl p-2 pl-6 rounded-[2rem] border border-white/10 shadow-2xl shadow-purple-900/5 transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500/50 focus-within:shadow-purple-500/10"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                        >
+                            <Input
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder={`Message ${chatType === 'group' ? headerInfo.name : '@' + headerInfo.name}...`}
+                                className="bg-transparent border-none text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 text-base py-6 flex-1 min-w-0"
+                            />
+
+                            <div className="flex items-center gap-2 pr-1">
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="text-zinc-400 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 transition-transform active:scale-90"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                >
+                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                                </Button>
+
+                                <AnimatePresence>
+                                    {inputValue.trim() && (
+                                        <motion.div
+                                            initial={{ scale: 0, opacity: 0, width: 0 }}
+                                            animate={{ scale: 1, opacity: 1, width: 'auto' }}
+                                            exit={{ scale: 0, opacity: 0, width: 0 }}
+                                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                        >
+                                            <Button
+                                                type="submit"
+                                                size="icon"
+                                                className="bg-zinc-100 text-black hover:bg-white rounded-full w-10 h-10 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+                                                disabled={!inputValue.trim()}
+                                            >
+                                                <Send className="w-4 h-4 ml-0.5" />
+                                            </Button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </motion.form>
+                    )}
+                </div>
             </div>
 
             {/* Modals */}
