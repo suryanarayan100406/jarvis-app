@@ -21,12 +21,16 @@ interface MessageProps {
 }
 
 // Custom Image Reactions
+// Gen Z / Vibe Reaction Set
 const REACTIONS = [
-    { id: 'cry_pray', src: '/reactions/cry_pray.png', label: 'Praying' },
-    { id: 'sad_baddie', src: '/reactions/sad_baddie.png', label: 'Baddie' },
-    { id: 'sad_lashes', src: '/reactions/sad_lashes.png', label: 'Lashes' },
-    { id: 'sobbing', src: '/reactions/sobbing.png', label: 'Sobbing' },
-    { id: 'crying_fist', src: '/reactions/crying_fist.png', label: 'Crying' },
+    { id: 'cry_pray', label: '😭🙏' }, // Praying/Crying
+    { id: 'baddie', label: '💅✨' }, // Baddie
+    { id: 'lashes', label: '👁️👄👁️' }, // Lashes/Shock
+    { id: 'fist_cry', label: '✊😔' }, // Crying Fist/Pain
+    { id: 'down_bad', label: '📉' }, // Down bad/Sobbing
+    { id: 'skull', label: '💀' }, // Dead
+    { id: 'clown', label: '🤡' }, // Clown
+    { id: 'real', label: '💯' }, // Real
 ]
 
 export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDelete, reactions = {}, currentUserId, onReact, attachmentUrl, attachmentType }: MessageProps) {
