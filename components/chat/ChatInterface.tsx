@@ -25,6 +25,8 @@ export default function ChatInterface() {
 
     const [currentUser, setCurrentUser] = useState<any>(null)
     const { messages, isLoading, deleteForEveryone, deleteForMe, toggleReaction, addMessage } = useChatMessages(channelId, currentUser?.id)
+    const router = useRouter()
+    const [inputValue, setInputValue] = useState('')
     const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null)
     const [summary, setSummary] = useState<string | null>(null)
     const [isSummarizing, setIsSummarizing] = useState(false)
