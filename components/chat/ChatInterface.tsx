@@ -33,6 +33,7 @@ export default function ChatInterface() {
     const [showGroupInfo, setShowGroupInfo] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+    const [showTextMagicMenu, setShowTextMagicMenu] = useState(false)
     const [showCamera, setShowCamera] = useState(false)
     const videoRef = useRef<HTMLVideoElement>(null)
     const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
@@ -59,6 +60,18 @@ export default function ChatInterface() {
             setCameraStream(null)
         }
         setShowCamera(false)
+    }
+
+    const applyTextStyle = (style: string) => {
+        let newText = inputValue
+        switch (style) {
+            case 'bold': newText += ' *bold* '; break;
+            case 'italic': newText += ' _italic_ '; break;
+            case 'rainbow': newText += ' ~rainbow~ '; break;
+            case 'glitch': newText += ' `glitch` '; break;
+        }
+        setInputValue(newText)
+        setShowTextMagicMenu(false)
     }
 
     const capturePhoto = () => {
@@ -656,16 +669,43 @@ export default function ChatInterface() {
                             {/* Right Side Actions */}
                             <div className="flex items-center gap-2 pr-2 pb-1">
                                 {/* Text Magic/Effects */}
+                                {/* Text Magic/Effects */}
                                 {inputValue.trim() && (
-                                    <Button
-                                        type="button"
-                                        size="icon"
-                                        variant="ghost"
-                                        className="text-zinc-400 hover:text-pink-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors"
-                                        onClick={() => alert("Text FX Coming Soon!")}
-                                    >
-                                        <Sparkles className="w-5 h-5" />
-                                    </Button>
+                                    <div className="relative">
+                                        <Button
+                                            type="button"
+                                            size="icon"
+                                            variant="ghost"
+                                            className={cn("text-zinc-400 hover:text-pink-400 hover:bg-white/10 rounded-full h-10 w-10 transition-colors", showTextMagicMenu && "text-pink-400 bg-white/10")}
+                                            onClick={() => setShowTextMagicMenu(!showTextMagicMenu)}
+                                        >
+                                            <Sparkles className="w-5 h-5" />
+                                        </Button>
+
+                                        <AnimatePresence>
+                                            {showTextMagicMenu && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                                    className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-white/10 rounded-xl shadow-xl overflow-hidden min-w-[120px] flex flex-col p-1"
+                                                >
+                                                    <button type="button" onClick={() => applyTextStyle('bold')} className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-lg text-sm text-white font-bold text-left transition-colors">
+                                                        Bold
+                                                    </button>
+                                                    <button type="button" onClick={() => applyTextStyle('italic')} className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-lg text-sm text-white italic text-left transition-colors">
+                                                        Italic
+                                                    </button>
+                                                    <button type="button" onClick={() => applyTextStyle('rainbow')} className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-lg text-sm text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 font-bold text-left transition-colors">
+                                                        Rainbow
+                                                    </button>
+                                                    <button type="button" onClick={() => applyTextStyle('glitch')} className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-lg text-sm text-cyan-400 font-mono text-left transition-colors">
+                                                        Glitch
+                                                    </button>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 )}
 
                                 <AnimatePresence mode="wait">

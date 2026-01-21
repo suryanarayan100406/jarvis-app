@@ -181,7 +181,25 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                                 )}
                             </div>
                         )}
-                        {content !== "Sent an attachment" && <p className="leading-relaxed">{content}</p>}
+                        {content !== "Sent an attachment" && (
+                            <p className="leading-relaxed whitespace-pre-wrap break-words">
+                                {content.split(/(\*.*?\*|_.*?_|~.*?~|`.*?`)/g).map((part, i) => {
+                                    if (part.startsWith('*') && part.endsWith('*')) {
+                                        return <strong key={i} className="font-extrabold">{part.slice(1, -1)}</strong>
+                                    }
+                                    if (part.startsWith('_') && part.endsWith('_')) {
+                                        return <em key={i} className="italic text-white/90">{part.slice(1, -1)}</em>
+                                    }
+                                    if (part.startsWith('~') && part.endsWith('~')) {
+                                        return <span key={i} className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-yellow-400 to-blue-400 animate-pulse">{part.slice(1, -1)}</span>
+                                    }
+                                    if (part.startsWith('`') && part.endsWith('`')) {
+                                        return <span key={i} className="font-mono text-cyan-400 bg-cyan-900/20 px-1 rounded-md border border-cyan-500/30">{part.slice(1, -1)}</span>
+                                    }
+                                    return part
+                                })}
+                            </p>
+                        )}
 
                         <span className="text-[10px] opacity-50 block text-right mt-1">
                             {timestamp}
