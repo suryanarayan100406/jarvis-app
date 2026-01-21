@@ -260,8 +260,16 @@ export default function ChatInterface() {
     const isRecordingWantedRef = useRef(false)
 
     const startRecording = async () => {
+        isRecordingWantedRef.current = true
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+            // Check if user released button
+            if (!isRecordingWantedRef.current) {
+                stream.getTracks().forEach(track => track.stop())
+                return
+            }
+
             const mediaRecorder = new MediaRecorder(stream)
             mediaRecorderRef.current = mediaRecorder
             chunksRef.current = []
@@ -287,10 +295,11 @@ export default function ChatInterface() {
     }
 
     const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
+        isRecordingWantedRef.current = false
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
             mediaRecorderRef.current.stop()
-            setIsRecording(false)
         }
+        setIsRecording(false)
     }
 
     const sendVoiceMessage = async (audioBlob: Blob) => {
