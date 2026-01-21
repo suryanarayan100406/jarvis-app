@@ -86,7 +86,7 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.2 }}
-            className={cn("flex w-full mb-8", isOwn ? "justify-end" : "justify-start")}
+            className={cn("flex w-full mb-4", isOwn ? "justify-end" : "justify-start")}
             onMouseLeave={() => setShowReactions(false)}
         >
             <div className={cn("relative group max-w-[80%] md:max-w-[60%] flex gap-2 items-end", isOwn ? "flex-row" : "flex-row-reverse")}>
@@ -138,10 +138,10 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
                     <motion.div
                         onContextMenu={(e) => { e.preventDefault(); setShowReactions(!showReactions) }}
                         className={cn(
-                            "p-3 rounded-2xl relative shadow-sm cursor-pointer border border-transparent",
+                            "p-3.5 rounded-[20px] relative shadow-md cursor-pointer border selection:bg-white/30",
                             isOwn
-                                ? "bg-primary text-white rounded-br-none"
-                                : "bg-zinc-900 border-white/10 text-foreground rounded-bl-none"
+                                ? "bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-br-sm border-transparent"
+                                : "bg-zinc-800/80 border-white/5 text-zinc-100 rounded-bl-sm backdrop-blur-sm"
                         )}
                         whileHover={{ scale: 1.01 }}
                     >
