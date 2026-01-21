@@ -91,12 +91,13 @@ export function MessageBubble({ id, isOwn, content, timestamp, senderName, onDel
         >
             <div className={cn("relative group max-w-[80%] md:max-w-[60%] flex gap-2 items-end", isOwn ? "flex-row" : "flex-row-reverse")}>
 
-                {/* Left Side Actions (Delete) */}
-                {isOwn && onDelete && (
+                {/* Side Actions (Delete) */}
+                {onDelete && (
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 pb-2">
                         <button
-                            onClick={() => { if (confirm("Delete this message?")) onDelete(id) }}
-                            className="text-destructive hover:bg-destructive/10 p-1.5 rounded-full"
+                            onClick={() => onDelete(id)}
+                            className="text-zinc-500 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-full transition-all"
+                            title="Delete Message"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
