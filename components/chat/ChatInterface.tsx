@@ -38,6 +38,7 @@ export default function ChatInterface() {
     const videoRef = useRef<HTMLVideoElement>(null)
     const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     const startCamera = async () => {
         try {
@@ -49,7 +50,7 @@ export default function ChatInterface() {
             }
         } catch (err) {
             console.error("Camera error:", err)
-            alert("Could not access camera.")
+            // alert("Could not access camera.") 
             setShowCamera(false)
         }
     }
@@ -63,15 +64,33 @@ export default function ChatInterface() {
     }
 
     const applyTextStyle = (style: string) => {
-        let newText = inputValue
+        const input = inputRef.current
+        if (!input) return
+
+        const start = input.selectionStart || 0
+        const end = input.selectionEnd || 0
+        const selectedText = inputValue.substring(start, end)
+
+        let prefix = ''
+        let suffix = ''
+
         switch (style) {
-            case 'bold': newText += ' *bold* '; break;
-            case 'italic': newText += ' _italic_ '; break;
-            case 'rainbow': newText += ' ~rainbow~ '; break;
-            case 'glitch': newText += ' `glitch` '; break;
+            case 'bold': prefix = '*'; suffix = '*'; break;
+            case 'italic': prefix = '_'; suffix = '_'; break;
+            case 'rainbow': prefix = '~'; suffix = '~'; break;
+            case 'glitch': prefix = '`'; suffix = '`'; break;
         }
+
+        const newText = inputValue.substring(0, start) + prefix + (selectedText || '') + suffix + inputValue.substring(end)
         setInputValue(newText)
         setShowTextMagicMenu(false)
+
+        // Restore cursor position inside the markers
+        setTimeout(() => {
+            input.focus()
+            const newCursorPos = selectedText ? end + prefix.length + suffix.length : start + prefix.length
+            input.setSelectionRange(newCursorPos, newCursorPos)
+        }, 0)
     }
 
     const capturePhoto = () => {
@@ -86,17 +105,21 @@ export default function ChatInterface() {
                     if (blob) {
                         const file = new File([blob], "photo.jpg", { type: "image/jpeg" })
                         stopCamera()
-
-                        // Upload Logic Re-use (simulating event or calling logic)
-                        // Easier to just duplicate upload logic for Blob or Extract upload logic.
-                        // I will just call handleFileUpload logic manually or create specific one.
-                        // I'll create a quick helper `uploadFile(file)`
                         await uploadFile(file)
                     }
                 }, 'image/jpeg')
             }
         }
     }
+
+    // ... skipping unchanged ...
+
+    // Input Render update
+    // ...
+    //   <Input
+    //       ref={inputRef}
+    //       value={inputValue}
+    // ...
 
     const uploadFile = async (file: File) => {
         if (!currentUser) return
@@ -659,6 +682,7 @@ export default function ChatInterface() {
 
                             {/* Input Field */}
                             <Input
+                                ref={inputRef}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 placeholder={`Message...`}
