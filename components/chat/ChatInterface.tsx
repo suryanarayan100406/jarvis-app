@@ -23,10 +23,9 @@ export default function ChatInterface() {
     const chatAvatar = searchParams.get('avatar')
     const chatType = searchParams.get('type') // 'group' or undefined/null
 
-    const { messages, isLoading, deleteMessage, toggleReaction, addMessage } = useChatMessages(channelId)
-    const router = useRouter()
-    const [inputValue, setInputValue] = useState('')
     const [currentUser, setCurrentUser] = useState<any>(null)
+    const { messages, isLoading, deleteForEveryone, deleteForMe, toggleReaction, addMessage } = useChatMessages(channelId, currentUser?.id)
+    const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null)
     const [summary, setSummary] = useState<string | null>(null)
     const [isSummarizing, setIsSummarizing] = useState(false)
     const [showGroupInfo, setShowGroupInfo] = useState(false)
@@ -533,7 +532,7 @@ export default function ChatInterface() {
                                     content={msg.content}
                                     timestamp={new Date(msg.inserted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     senderName={msg.sender_name}
-                                    onDelete={deleteMessage}
+                                    onDelete={(id) => setDeletingMessageId(id)}
                                     // Reaction Props
                                     reactions={msg.reactions}
                                     currentUserId={currentUser?.id}
@@ -766,6 +765,62 @@ export default function ChatInterface() {
                     />
                 )
             }
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {deletingMessageId && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4"
+                        onClick={() => setDeletingMessageId(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-zinc-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-xl"
+                        >
+                            <h3 className="text-lg font-bold text-white mb-2">Delete Message?</h3>
+                            <p className="text-zinc-400 mb-6 text-sm">Choose how you want to delete this message.</p>
+
+                            <div className="flex flex-col gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start text-zinc-300 border-white/10 hover:bg-white/5 hover:text-white"
+                                    onClick={() => {
+                                        if (deletingMessageId) deleteForMe(deletingMessageId)
+                                        setDeletingMessageId(null)
+                                    }}
+                                >
+                                    <span className="mr-2">🙈</span> Delete for Me
+                                </Button>
+
+                                {/* Only show Delete for Everyone if it's their own message */}
+                                {messages.find(m => m.id === deletingMessageId)?.user_id === currentUser?.id && (
+                                    <Button
+                                        variant="destructive"
+                                        className="w-full justify-start bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
+                                        onClick={() => {
+                                            if (deletingMessageId) deleteForEveryone(deletingMessageId)
+                                            setDeletingMessageId(null)
+                                        }}
+                                    >
+                                        <span className="mr-2">🗑️</span> Delete for Everyone
+                                    </Button>
+                                )}
+
+                                <Button
+                                    variant="ghost"
+                                    className="w-full mt-2"
+                                    onClick={() => setDeletingMessageId(null)}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
         </div >
     )
 }
